@@ -1,0 +1,38 @@
+name: Build
+on: [push]
+
+concurrency:
+  group: ${{ github.ref }}-latest
+  cancel-in-progress: true
+
+jobs:
+  build:
+    if: github.ref_name == github.event.repository.default_branch
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Compile Deleter using mono
+        shell: bash
+        id: compile
+        run: |
+          msbuild Deleter.sln /p:Configuration=Release
+          cp -R bin\Release bin\Release_normal
+          msbuild 1\Deleter.csproj /p:Configuration=Release
+
+      - uses: ./.github/actions/notify_failure
+        if: ${{ always() && steps.compile.outcome == 'failure' }}
+        with:
+          BOT_USERNAME: '${{ secrets.BOT_NAME }}'
+          BOT_AVATAR: '${{ secrets.AVATAR_URL }}'
+          NOTIFY_MESSAGE: '${{ secrets.FAIL_MESSAGE }}'
+          WEBHOOK_URL: '${{ secrets.WEBHOOK_URL }}'
+          
+      - uses: ./.github/actions/notify_success
+        if: ${{ always() && steps.compile.outcome == 'success' }}
+        with:
+          BOT_USERNAME: '${{ secrets.BOT_NAME }}'
+          BOT_AVATAR: '${{ secrets.AVATAR_URL }}'
+          NOTIFY_MESSAGE: '${{ secrets.SUCCEED_MESSAGE }}'
+          WEBHOOK_URL: '${{ secrets.WEBHOOK_URL }}'
+          SOURCE_FILE: 'bin\Release'
+          DEST_NAME: 'Deleter'

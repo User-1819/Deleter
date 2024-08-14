@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33213.308
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deleter", "1\Deleter.csproj", "{A1A5B886-2D0A-4D2A-AE13-409560D5227C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deleter2", "2\Deleter2.csproj", "{06470A34-BA7D-4FB1-9559-F6909FF3F0A7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deleter3", "3\Deleter3.csproj", "{A8E8DA7C-0C84-4136-83AA-81ED3DD49301}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deleter4", "4\Deleter4.csproj", "{D9234E23-00FA-432D-A40F-B73C01C9EFB4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A1A5B886-2D0A-4D2A-AE13-409560D5227C}.Release|x86.ActiveCfg = Release|x86
+		{A1A5B886-2D0A-4D2A-AE13-409560D5227C}.Release|x86.Build.0 = Release|x86
+		{06470A34-BA7D-4FB1-9559-F6909FF3F0A7}.Release|x86.ActiveCfg = Release|x86
+		{06470A34-BA7D-4FB1-9559-F6909FF3F0A7}.Release|x86.Build.0 = Release|x86
+		{A8E8DA7C-0C84-4136-83AA-81ED3DD49301}.Release|x86.ActiveCfg = Release|x86
+		{A8E8DA7C-0C84-4136-83AA-81ED3DD49301}.Release|x86.Build.0 = Release|x86
+		{D9234E23-00FA-432D-A40F-B73C01C9EFB4}.Release|x86.ActiveCfg = Release|x86
+		{D9234E23-00FA-432D-A40F-B73C01C9EFB4}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {59AE945E-784D-494E-A7BE-ED518B0FF56F}
+	EndGlobalSection
+EndGlobal
