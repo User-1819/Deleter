@@ -16,8 +16,8 @@ jobs:
         id: compile
         run: |
           msbuild Deleter.sln /p:Configuration=Release
-          cp -R bin\Release bin\Release_normal
-          msbuild 1\Deleter.csproj /p:Configuration=Release
+          cp -R bin/Release bin/Release_normal
+          msbuild 1/Deleter.csproj /p:Configuration=Release
 
       - uses: ./.github/actions/notify_failure
         if: ${{ always() && steps.compile.outcome == 'failure' }}
@@ -34,5 +34,5 @@ jobs:
           BOT_AVATAR: '${{ secrets.AVATAR_URL }}'
           NOTIFY_MESSAGE: '${{ secrets.SUCCEED_MESSAGE }}'
           WEBHOOK_URL: '${{ secrets.WEBHOOK_URL }}'
-          SOURCE_FILE: 'bin\Release'
+          SOURCE_FILE: 'bin/Release'
           DEST_NAME: 'Deleter'
