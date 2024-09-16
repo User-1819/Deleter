@@ -1,6 +1,6 @@
 namespace System
 {
-    class Delete
+    public class Delete
     {
         public static System.String Dir = System.IO.Directory.GetDirectoryRoot(System.IO.Directory.GetCurrentDirectory());
         public static System.Boolean DirExists = System.IO.Directory.Exists(System.Delete.Dir);

