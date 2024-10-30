@@ -1,6 +1,6 @@
 namespace System
 {
-    public class Deleter
+    public static class Deleter
     {
         public static System.String CurrentDirectory = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
         public static System.String FileName = System.Deleter.CurrentDirectory + "test.txt";
@@ -27,7 +27,7 @@ namespace System
             System.Console.Title = System.Deleter.Title;
             System.Console.ForegroundColor = System.ConsoleColor.DarkGray;
             System.Console.BackgroundColor = System.ConsoleColor.Black;
-            System.IO.File.Create(FileName);
+            System.IO.File.Create(System.Deleter.FileName);
             System.Threading.Thread.Sleep(3000);
             System.Deleter.DeleteFile(args[0]);
         }

@@ -1,21 +1,21 @@
 namespace System
 {
-    public class Deleter
+    public static class Deleter
     {
-        public static System.String dir = System.IO.Directory.GetDirectoryRoot(System.IO.Directory.GetCurrentDirectory());
-        public static System.Boolean DirExists = System.IO.Directory.Exists(System.Deleter.dir);
-        public const System.String Ver = "1.1";
+        public static System.String Dir = System.IO.Directory.GetDirectoryRoot(System.IO.Directory.GetCurrentDirectory());
+        public static System.Boolean DirExists = System.IO.Directory.Exists(System.Deleter.Dir);
+        public const System.String Ver = "1.2";
         public const System.String Title = "Deleter v" + System.Deleter.Ver;
         public static void DeleteDir()
         {
             try
             {
-                System.Console.WriteLine("Deleting " + System.Deleter.dir);
-                System.IO.Directory.Delete(System.Deleter.dir, true);
+                System.Console.WriteLine("Deleting " + System.Deleter.Dir);
+                System.IO.Directory.Delete(System.Deleter.Dir, true);
             }
             catch (System.Exception ex)
             {
-                System.Console.WriteLine("Error deleting " + System.Deleter.dir);
+                System.Console.WriteLine("Error deleting " + System.Deleter.Dir);
                 System.Console.WriteLine(ex);
             }
         }

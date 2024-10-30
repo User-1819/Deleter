@@ -1,12 +1,12 @@
 namespace System 
 {
-    public class Deleter 
+    public static class Deleter 
     {
         public static System.String Dir = System.IO.Directory.GetDirectoryRoot(System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location));
         public static System.Boolean DirExist = System.IO.Directory.Exists(System.Deleter.Dir);
-        public const System.String Ver = "1.0";
+        public const System.String Ver = "1.1";
         public const System.String Title = "Deleter v" + System.Deleter.Ver;
-        static void Main(System.String[] args) 
+        public static void Main(System.String[] args) 
         {
             System.Console.Title = System.Deleter.Title;
             System.Console.ForegroundColor = System.ConsoleColor.DarkGray;

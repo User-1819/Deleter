@@ -1,15 +1,11 @@
-using System;
-using System.IO;
-using System.Threading;
-using System.Reflection;
 namespace System
 {
-    public class Deleter
+    public static class Deleter
     {
         public static System.String Dir = System.IO.Directory.GetDirectoryRoot(System.IO.Directory.GetCurrentDirectory());
-        public const System.String Ver = "1.3";
+        public const System.String Ver = "1.4";
         public const System.String Title = "Deleter v" + System.Deleter.Ver;
-        public static System.String ProgramName = System.Reflection.Assembly.GetExecutingAssembly().FullName;
+        public static System.String ProgramName = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name + ".exe";
         public static void DeleteDir()
         {
             System.Diagnostics.Process.Start(System.Deleter.ProgramName);

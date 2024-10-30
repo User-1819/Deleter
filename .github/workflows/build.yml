@@ -1,5 +1,7 @@
 name: Build
-on: [push]
+on:
+  push:
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.ref }}-latest
@@ -10,8 +12,8 @@ jobs:
     if: github.ref_name == github.event.repository.default_branch
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Compile Deleter using mono
+      - uses: actions/checkout@v4
+      - name: Compile Deleter
         shell: bash
         id: compile
         run: |
