@@ -5,7 +5,7 @@ DefaultTargets="Build">
   <PropertyGroup>
    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
-   <ProjectGuid>{2E25923A-4B93-49F9-ACA7-1DC6C3D1ACDE}</ProjectGuid>
+   <ProjectGuid>{A1A5B886-2D0A-4D2A-AE13-409560D5227C}</ProjectGuid>
    <OutputType>Exe</OutputType>
    <AppDesignerFolder>Properties</AppDesignerFolder>
    <RootNamespace>Deleter7</RootNamespace>
