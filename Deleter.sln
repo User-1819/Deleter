@@ -34,6 +34,8 @@ Global
 		{69822535-D72E-4368-ADA4-5A07569B250B}.Release|x86.Build.0 = Release|x86
 		{2E25923A-4B93-49F9-ACA7-1DC6C3D1ACDE}.Release|x86.ActiveCfg = Release|x86
 		{2E25923A-4B93-49F9-ACA7-1DC6C3D1ACDE}.Release|x86.Build.0 = Release|x86
+		{63DCBB31-92CD-4464-A86C-A7E51A5FE9FE}.Release|x86.ActiveCfg = Release|x86
+		{63DCBB31-92CD-4464-A86C-A7E51A5FE9FE}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
