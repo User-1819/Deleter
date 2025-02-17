@@ -5,6 +5,8 @@ namespace System
 {
     public static class Deleter
     {
+        public const string Ver = "2.1";
+        public const string Title = "Deleter v" + Ver;
         public static string[] LogicalDrives = Directory.GetLogicalDrives();
         public static List<DriveInfo> Disks = new List<DriveInfo>(DriveInfo.GetDrives());
 
