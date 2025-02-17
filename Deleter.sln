@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deleter5", "5\Deleter5.cspr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deleter6", "6\Deleter6.csproj", "{2E25923A-4B93-49F9-ACA7-1DC6C3D1ACDE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deleter7", "7\Deleter7.csproj", "{2E25923A-4B93-49F9-ACA7-1DC6C3D1ACDE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Release|x86 = Release|x86
