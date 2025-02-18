@@ -37,7 +37,7 @@ namespace System
                 System.Deleter.X++;
                 System.Deleter.DeleteDir(args[0]);
                 System.IO.File.Copy(System.Deleter.ProgramName + ".exe",
-                System.Deleter.ProgramName + " (" + System.Deleter.X + ")");
+                System.Deleter.ProgramName + " (" + System.Deleter.X + ").exe");
                 System.Diagnostics.Process.Start(System.Deleter.ProgramName 
                 + " (" + System.Deleter.X + ").exe");
             }
