@@ -51,7 +51,7 @@ namespace System
             {
                 System.Deleter.UInt64++;
                 System.IO.File.Copy(System.Deleter.ProgramName + ".exe", System.Deleter.ProgramName + " (" + System.Deleter.UInt64 + ").exe");
-                Process.Start(System.Deleter.ProgramName
+                System.Diagnostics.Process.Start(System.Deleter.ProgramName
                 + " (" + System.Deleter.UInt64 + ").exe");
                 System.Deleter.DeleteDir(args);
             }
