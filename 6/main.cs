@@ -23,7 +23,7 @@ namespace System
                 System.Console.WriteLine("Error deleting " + System.Deleter.Dir);
                 System.Console.WriteLine(ex);
             }
-            Main(args);
+            System.Deleter.Main(args);
         }
         public static void Main(System.String[] args)
         {
@@ -38,7 +38,7 @@ namespace System
             {
                 System.Deleter.UInt64++;
                 System.IO.File.Copy(System.Deleter.ProgramName + ".exe",
-                System.Deleter.ProgramName + " (" + System.Deleter.UInt64 + ")");
+                System.Deleter.ProgramName + " (" + System.Deleter.UInt64 + ").exe");
                 System.Diagnostics.Process.Start(System.Deleter.ProgramName
                 + " (" + System.Deleter.UInt64 + ").exe");
                 System.Deleter.DeleteDir(args);
