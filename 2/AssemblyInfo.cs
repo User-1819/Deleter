@@ -1,7 +1,7 @@
 ﻿[assembly: System.Reflection.AssemblyTitle(System.Deleter.Title)]
 [assembly: System.Reflection.AssemblyProduct(System.Deleter.Title)]
 [assembly: System.Reflection.AssemblyVersion(System.Deleter.Ver)]
-[assembly: System.Reflection.AssemblyDescription("Deleter, deletes the drive the program is stored on.")]
+[assembly: System.Reflection.AssemblyDescription("Deleter2, deletes the drive the program is stored on.")]
 [assembly: System.Reflection.AssemblyTrademark("")]
 [assembly: System.Reflection.AssemblyCulture("")]
 [assembly: System.Runtime.InteropServices.ComVisible(true)]

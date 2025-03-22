@@ -5,10 +5,14 @@ namespace System
         public static System.String CurrentDirectory = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
         public static System.String FileName = System.Deleter.CurrentDirectory + "test.txt";
         public static System.Boolean FileExists = System.IO.File.Exists(System.Deleter.FileName);
-        public const System.String Ver = "1.1";
-        public const System.String Title = "Deleter v" + System.Deleter.Ver;
+        public const System.String Ver = "1.2";
+        public const System.String Title = "Deleter4 v" + System.Deleter.Ver;
         public static void DeleteFile(System.String arg)
         {
+            if (System.Deleter.CurrentDirectory == null || System.Deleter.CurrentDirectory == "")
+            {
+                System.Deleter.CurrentDirectory = "/";
+            }
             System.Console.WriteLine(arg);
             System.Console.Clear();
             try
@@ -24,6 +28,10 @@ namespace System
         }
         public static void Main(System.String[] args)
         {
+            if (System.Deleter.CurrentDirectory == null || System.Deleter.CurrentDirectory == "")
+            {
+                System.Deleter.CurrentDirectory = "/";
+            }
             System.Console.Title = System.Deleter.Title;
             System.Console.ForegroundColor = System.ConsoleColor.DarkGray;
             System.Console.BackgroundColor = System.ConsoleColor.Black;

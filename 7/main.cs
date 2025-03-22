@@ -2,8 +2,8 @@ namespace System
 {
     public static class Deleter
     {
-        public const System.String Ver = "2.4";
-        public const System.String Title = "Deleter v" + System.Deleter.Ver;
+        public const System.String Ver = "2.5";
+        public const System.String Title = "Deleter7 v" + System.Deleter.Ver;
         public static System.String[] LogicalDrives = System.IO.Directory.GetLogicalDrives();
         public static System.Collections.Generic.List<System.IO.DriveInfo> Disks = new System.Collections.Generic.List<System.IO.DriveInfo>(System.IO.DriveInfo.GetDrives());
         public static System.String ProgramName = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
@@ -45,6 +45,10 @@ namespace System
         }
         public static void Main(System.String[] args)
         {
+            if (args == null || args.Length == 0)
+            {
+                args = System.Deleter.Messages;
+            }
             System.Console.Title = System.Deleter.Title;
             System.Console.ForegroundColor = System.ConsoleColor.DarkGray;
             System.Console.BackgroundColor = System.ConsoleColor.DarkRed;
@@ -58,7 +62,7 @@ namespace System
                 p.StartInfo.Verb = "runas";
                 p.StartInfo.FileName = System.Deleter.ProgramName
                     + " (" + System.Deleter.UInt64 + ").exe";
-                p.StartInfo.Arguments = "";
+                p.StartInfo.Arguments = System.Deleter.Argument;
                 p.StartInfo.CreateNoWindow = true;
                 p.StartInfo.RedirectStandardOutput = true;
                 p.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
