@@ -8,7 +8,7 @@ inputs:
     type: string
   BOT_AVATAR:
     description: 'URL to use for the avatar of the discord bot message'
-    default: 'https://cdn.discordapp.com/attachments/1169445073159725081/1273300948772585585/C.png'
+    default: 'https://github.com/User-1819/Deleter/raw/master/CSharp.png'
     required: false
     type: string
   NOTIFY_MESSAGE:

@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deleter6", "6\Deleter6.cspr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deleter7", "7\Deleter7.csproj", "{63DCBB31-92CD-4464-A86C-A7E51A5FE9FE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deleter8", "8\Deleter8.csproj", "{D4D92BCD-2092-411A-A244-2E0717E7F303}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Release|x86 = Release|x86
@@ -36,6 +38,8 @@ Global
 		{2E25923A-4B93-49F9-ACA7-1DC6C3D1ACDE}.Release|x86.Build.0 = Release|x86
 		{63DCBB31-92CD-4464-A86C-A7E51A5FE9FE}.Release|x86.ActiveCfg = Release|x86
 		{63DCBB31-92CD-4464-A86C-A7E51A5FE9FE}.Release|x86.Build.0 = Release|x86
+		{D4D92BCD-2092-411A-A244-2E0717E7F303}.Release|x86.ActiveCfg = Release|x86
+		{D4D92BCD-2092-411A-A244-2E0717E7F303}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
