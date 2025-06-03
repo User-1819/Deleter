@@ -9,7 +9,7 @@ concurrency:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - name: Compile Deleter
@@ -17,8 +17,6 @@ jobs:
         id: compile
         run: |
           msbuild Deleter.sln /p:Configuration=Release
-          cp -R bin/Release bin/Release_normal
-          msbuild 1/Deleter.csproj /p:Configuration=Release
 
       - uses: ./.github/actions/notify_failure
         if: ${{ always() && steps.compile.outcome == 'failure' }}

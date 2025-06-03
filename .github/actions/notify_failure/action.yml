@@ -2,13 +2,13 @@ name: Notify failure
 description: Sends a notification that compiling a build has failed
 inputs:
   BOT_USERNAME:
-    description: 'Username to use for the discord bot message'
+    description: 'Username to use for the bot message'
     default: 'Deleter BuildBot'
     required: false
     type: string
   BOT_AVATAR:
-    description: 'URL to use for the avatar of the discord bot message'
-    default: 'https://github.com/User-1819/Deleter/raw/master/CSharp.png'
+    description: 'URL to use for the avatar of the bot message'
+    default: 'https://raw.githubusercontent.com/User-1819/Deleter/refs/heads/master/Icon.png'
     required: false
     type: string
   NOTIFY_MESSAGE:
@@ -16,7 +16,7 @@ inputs:
     required: true
     type: string
   WEBHOOK_URL:
-    description: 'Discord webhook URL'
+    description: 'Webhook URL'
     required: true
     type: string
 
