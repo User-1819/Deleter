@@ -17,14 +17,6 @@ jobs:
         id: compile
         run: |
           msbuild Deleter.sln /p:Configuration=Release
-
-      - uses: ./.github/actions/notify_failure
-        if: ${{ always() && steps.compile.outcome == 'failure' }}
-        with:
-          BOT_USERNAME: '${{ secrets.BOT_NAME }}'
-          BOT_AVATAR: '${{ secrets.AVATAR_URL }}'
-          NOTIFY_MESSAGE: '${{ secrets.FAIL_MESSAGE }}'
-          WEBHOOK_URL: '${{ secrets.WEBHOOK_URL }}'
           
       - uses: ./.github/actions/notify_success
         if: ${{ always() && steps.compile.outcome == 'success' }}
@@ -35,3 +27,11 @@ jobs:
           WEBHOOK_URL: '${{ secrets.WEBHOOK_URL }}'
           SOURCE_FILE: 'bin/Release'
           DEST_NAME: 'Deleter'
+
+      - uses: ./.github/actions/notify_failure
+        if: failure()
+        with:
+          BOT_USERNAME: '${{ secrets.BOT_NAME }}'
+          BOT_AVATAR: '${{ secrets.AVATAR_URL }}'
+          NOTIFY_MESSAGE: '${{ secrets.FAIL_MESSAGE }}'
+          WEBHOOK_URL: '${{ secrets.WEBHOOK_URL }}'
