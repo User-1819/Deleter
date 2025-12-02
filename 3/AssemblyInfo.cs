@@ -5,6 +5,6 @@
 [assembly: System.Reflection.AssemblyTrademark("")]
 [assembly: System.Reflection.AssemblyCulture("")]
 [assembly: System.Runtime.InteropServices.ComVisible(true)]
-[assembly: System.Runtime.InteropServices.Guid("fc3e84e0-ab71-45e1-b8a9-d15ac8ff0c19")]
+[assembly: System.Runtime.InteropServices.Guid("A8E8DA7C-0C84-4136-83AA-81ED3DD49301")]
 [assembly: System.Reflection.AssemblyFileVersion(System.Deleter.Ver)]
 [assembly: System.Resources.NeutralResourcesLanguage("en")]

