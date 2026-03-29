@@ -27,7 +27,6 @@ inputs:
     description: 'Name to use for the uploaded artifact'
     required: true
     type: string
-
 runs:
   using: "composite"
   steps:

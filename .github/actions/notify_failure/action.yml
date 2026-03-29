@@ -19,7 +19,6 @@ inputs:
     description: 'Webhook URL'
     required: true
     type: string
-
 runs:
   using: "composite"
   steps:
